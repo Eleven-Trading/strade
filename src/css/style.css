@@ -1,0 +1,33 @@
+.oldData, .oldData .green1, .oldData .green2, .oldData .green3, .oldData .green4, .oldData .red {
+    color: rgb(160, 158, 158);
+    background-color: transparent;
+}
+
+.audioButton{
+    height: 40px;
+    width: 40px;
+}
+
+.green1{
+    background-color: #32de84; 
+    color: white;
+}
+
+.green2{
+    background-color: #00AB66; 
+    color: white;
+}
+
+.green3{
+    background-color: #006241; 
+    color: white;
+}
+
+.green4{
+    background-color: #004526; 
+    color: white;
+}
+.red{
+    background-color: #ff3333; 
+    color: white;
+}

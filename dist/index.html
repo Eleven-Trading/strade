@@ -1,0 +1,624 @@
+<html>
+    <head>
+        <!--<link rel="icon" type="image/png" href="images/bull.png"/>-->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel="stylesheet" href="css/style.css"/>
+        <script src="https://use.fontawesome.com/365512f0c3.js"></script>
+    </head>
+    <body>
+        <div id="vapp">
+            <div class="container-fluid">
+
+                <!-- SOUND -->
+                <div class="mt-3 form-inline">
+                    <button class="btn btn-info audioButton" v-on:click="sound = !sound">
+                        <span v-if="sound == true">
+                            <i class="fa fa-volume-up"></i>
+                        </span>
+                        <span v-else>
+                            <i class="fa fa-volume-off"></i></span></button>
+
+                    <div class="input-group ml-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">
+                                <i class="fa fa-retweet"></i>
+                            </span>
+                        </div>
+
+                        <select v-on:input="secUpdate = $event.target.value; if ($event.target.value == 0){stopIntervals()}else{startIntervals()}" class="form-control">
+                            <option value="0" selected>STOP</option>
+                            <option value="10" selected>10s</option>
+                            <option value="5">5s</option>
+                            <option value="15">15s</option>
+                            <option value="20">20s</option>
+                        </select>
+                    </div>
+                </div>
+                <hr>
+                <div class="mt-3 mb-3">
+                    <div class="row">
+                        <div class="col">
+                            <label>Minimum Volume</label>
+                            <select v-on:input="minVolume = $event.target.value" class="form-control">
+                                <option v-for="item in minVolumeArray" v-bind:value="item.value" :selected="item.value == minVolume">{{item.label}}</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label>Minimum price</label>
+                            <select v-on:input="minPrice = $event.target.value" class="form-control">
+                                <option v-for="item in priceArray" v-bind:value="item.value" :selected="item.value ==  minPrice">{{item.label}}</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label>Maximum price</label>
+                            <select v-on:input="maxPrice = $event.target.value" class="form-control">
+                                <option v-for="item in priceArray" v-bind:value="item.value" :selected="item.value == maxPrice">{{item.label}}</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label>Minimum increase(¢)</label>
+                            <select v-on:input="minPriceDiff = $event.target.value" class="form-control">
+                                <option v-for="item in minPriceDiffArray" v-bind:value="item.value" :selected="item.value == 0.1">{{item.label}}</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label>Minimum increase(%)</label>
+                            <select v-on:input="minPricePc = $event.target.value" class="form-control">
+                                <option v-for="item in minPricePcArray" v-bind:value="item.value" :selected="item.value == 1">{{item.label}}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+                <div class="mt-3">
+                    <h3 class="ml-2 mt-3 text-blue">MOMO</h3>
+                    <table class="table text-center">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Time</th>
+                                <th scope="col">Symbol</th>
+                                <th scope="col">Strategy</th>
+                                <th scope="col">Price</th>
+                                <th scope="col">Volume</th>
+                                <th scope="col">Float</th>
+                                <th scope="col">Float Ratio</th>
+                                <th scope="col">Price Chge</th>
+                                <th scope="col">Price Chge(%)</th>
+                                <th scope="col">Volume Chge(%)</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="snapshot in secSnapshot.slice(0,20)" v-bind:class="[$moment().diff($moment.unix(snapshot.time), 'seconds')>=secUpdate? 'oldData' : '']">
+                                <td>{{$moment.unix(snapshot.time).tz("America/New_York").format("hh:mm:ss")}}</td>
+                                <td>{{snapshot.symbol}}</td>
+                                <td>{{snapshot.strategy}}</td>
+                                <td>{{snapshot.updatePrice}}</td>
+                                <td>
+                                    <span v-if="snapshot.volume<1000000">{{Math.ceil(snapshot.volume/1000)}}k</span><span v-else>{{parseFloat(snapshot.volume/1000000).toFixed(1)}}M</span></td>
+                                <td>
+                                    <span v-if="snapshot.float<1000000">{{Math.ceil(snapshot.float/1000)}}k</span><span v-else>{{parseFloat(snapshot.float/1000000).toFixed(1)}}M</span></td>
+
+                                <td v-bind:class="{'green1': snapshot.floatRatio>=0.5 && snapshot.floatRatio<1, 'green2': snapshot.floatRatio>=1 && snapshot.floatRatio<1.5, 'green3': snapshot.floatRatio>=1.5 && snapshot.floatRatio<2, 'green4': snapshot.floatRatio>=2}">{{snapshot.floatRatio}}</td>
+
+                                <td v-bind:class="{'green1': snapshot.priceIncrease>=0.075 && snapshot.priceIncrease<0.10, 'green2': snapshot.priceIncrease>=0.10 && snapshot.priceIncrease<0.15, 'green3': snapshot.priceIncrease>=0.15 && snapshot.priceIncrease<0.20, 'green4': snapshot.priceIncrease>=0.20}">{{snapshot.priceIncrease}}$</td>
+
+                                <td v-bind:class="{'green1': snapshot.priceIncreasePc>=1 && snapshot.priceIncrease<2, 'green2': snapshot.priceIncreasePc>=2 && snapshot.priceIncrease<3, 'green3': snapshot.priceIncreasePc>=3 && snapshot.priceIncrease<4, 'green4': snapshot.priceIncreasePc>=4}">{{snapshot.priceIncreasePc}}%</td>
+                                <td v-bind:class="{'green1': snapshot.volumeChange>=2 && snapshot.volumeChange<5, 'green2': snapshot.volumeChange>=5 && snapshot.volumeChange<7.5, 'green3': snapshot.volumeChange>=7.5 && snapshot.volumeChange<10, 'green4': snapshot.volumeChange>=10, 'red': snapshot.volumeChange<0}">{{snapshot.volumeChange}}%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!--end vue app-->
+
+        <!-- ********************************************************* 
+                        *
+                        SCRIPTS
+                        *
+                        ********************************************************* -->
+        <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.min.js" integrity="sha256-T/f7Sju1ZfNNfBh7skWn0idlCBcI3RwdLSS4/I7NQKQ=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script>
+
+        <script src="https://momentjs.com/downloads/moment-timezone-with-data.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue-moment-lib@1.2.2/dist/vue-moment-lib.umd.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.20/lodash.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify@3.17.10/dist/tagify.min.js"></script>
+        <!-- ********************************************************* 
+                        *
+                        VUEJS
+                        *
+                        ********************************************************* -->
+        <script>
+
+            const vueApp = new Vue({
+
+                components: {}, el: '#vapp',
+                /***********************
+                                *
+                                * DATA
+                                *
+                                ***********************/
+                data() {
+                    return {
+                        sound: true,
+                        voice: 49,
+                        originalTimeout: null,
+                        oneMinInterval: null,
+                        secInterval: null,
+                        secUpdate: 10,
+                        minVolume: 750000,
+                        minVolumeArray: [
+                            {
+                                value: 250000,
+                                label: "250k"
+                            }, {
+                                value: 300000,
+                                label: "300k"
+                            }, {
+                                value: 400000,
+                                label: "400k"
+                            }, {
+                                value: 500000,
+                                label: "500k"
+                            }, {
+                                value: 600000,
+                                label: "600k"
+                            }, {
+                                value: 750000,
+                                label: "750k"
+                            }, {
+                                value: 800000,
+                                label: "800k"
+                            }, {
+                                value: 900000,
+                                label: "900k"
+                            }, {
+                                value: 1000000,
+                                label: "1M"
+                            }
+                        ],
+                        maxVolume: 500000000,
+                        priceArray: [
+                            {
+                                value: 0,
+                                label: "0$"
+                            }, {
+                                value: 1,
+                                label: "1$"
+                            }, {
+                                value: 2,
+                                label: "2$"
+                            }, {
+                                value: 3,
+                                label: "3$"
+                            }, {
+                                value: 4,
+                                label: "4$"
+                            }, {
+                                value: 5,
+                                label: "5$"
+                            }, {
+                                value: 6,
+                                label: "6$"
+                            }, {
+                                value: 7,
+                                label: "7$"
+                            }, {
+                                value: 8,
+                                label: "8$"
+                            }, {
+                                value: 9,
+                                label: "9$"
+                            }, {
+                                value: 10,
+                                label: "10$"
+                            }, {
+                                value: 11,
+                                label: "11$"
+                            }, {
+                                value: 12,
+                                label: "12$"
+                            }, {
+                                value: 13,
+                                label: "13$"
+                            }, {
+                                value: 14,
+                                label: "14$"
+                            }, {
+                                value: 15,
+                                label: "15$"
+                            }, {
+                                value: 16,
+                                label: "16$"
+                            }, {
+                                value: 17,
+                                label: "17$"
+                            }, {
+                                value: 18,
+                                label: "18$"
+                            }, {
+                                value: 19,
+                                label: "19$"
+                            }, {
+                                value: 20,
+                                label: "20$"
+                            }
+                        ],
+                        minPrice: 1,
+                        maxPrice: 12,
+                        minPriceDiff: 0.1,
+                        minPriceDiffArray: [
+                            {
+                                value: 0.05,
+                                label: "5¢"
+                            }, {
+                                value: 0.075,
+                                label: "7.5¢"
+                            }, {
+                                value: 0.1,
+                                label: "10¢"
+                            }, {
+                                value: 0.125,
+                                label: "12.5¢"
+                            }, {
+                                value: 0.15,
+                                label: "15¢"
+                            }
+                        ],
+                        minPricePc: 1,
+                        minPricePcArray: [
+                            {
+                                value: 0.5,
+                                label: "0.5%"
+                            }, {
+                                value: 0.75,
+                                label: "0.75%"
+                            }, {
+                                value: 1,
+                                label: "1%"
+                            }, {
+                                value: 1.25,
+                                label: "1.25%"
+                            }, {
+                                value: 1.5,
+                                label: "1.5%"
+                            }, {
+                                value: 1.75,
+                                label: "1.75%"
+                            }, {
+                                value: 2,
+                                label: "2%"
+                            }
+                        ],
+                        tickerArray: null,
+                        oneMinSnapshot: [],
+                        fiveMinSnapshot: [],
+                        secSnapshot: []
+                    }
+                },
+
+                /***********************
+                                *
+                                * CREATED
+                                *
+                                ***********************/
+                created() {},
+
+                /***********************
+                                *
+                                * MOUNTED
+                                *
+                                ***********************/
+                mounted() {
+                    speechSynthesis
+                        .getVoices()
+                        .forEach(function (voice, index) {
+                            console.log("voice name " + voice.name + "  and index " + index);
+                        })
+
+                    console.log("GETTING TICKER LIST")
+                    url = "scripts/tickerList.php"
+                    axios
+                        .post(url, {})
+                        .then(response => {
+                            var tickerArray = []
+                            //console.log(" -> full ticker list " + JSON.stringify(response.data))
+                            for (key in response.data) {
+
+                                tickerArray.push(response.data[key].symbol)
+                            }
+                            //console.log(" -> Ticker array : " + JSON.stringify(tickerArray))
+                            this.tickerArray = tickerArray
+
+                        })
+                        .catch(e => {
+
+                            console.log("error " + e)
+                        })
+                        //
+                        this
+                        .startIntervals()
+
+                },
+
+                /***********************
+                                *
+                                * WATCH
+                                *
+                                ***********************/
+                watch: {},
+
+                /***********************
+                                *
+                                * METHODS
+                                *
+                                ***********************/
+                methods: {
+                    tts() {
+                        var msg = new SpeechSynthesisUtterance();
+                        var voices = speechSynthesis.getVoices();
+                        msg.voice = voices[51];
+                        //msg.volume = 1;  From 0 to 1
+                        msg.rate = 0.9; // From 0.1 to 10
+                        //msg.pitch = 2;  From 0 to 2
+                        msg.lang = 'en';
+                        msg.text = "KXIN";
+                        window
+                            .speechSynthesis
+                            .speak(msg);
+                        /*speechSynthesis
+                                .getVoices()
+                                .forEach(function (voice, index) {
+                                    console.log("voice name "+voice.name+"  and index "+index);
+                                });*/
+                    },
+                    startIntervals() {
+                        this.stopIntervals()
+                        console.log("STARTING TIMER WITH 1 MIN AND " + this.secUpdate + " SEC INTERVAL")
+                        var date = new Date();
+                        console.log((60 - date.getSeconds()) + " seconds left to full minute")
+                        this.originalTimeout = setTimeout(() => {
+                            var minuteDate = new Date();
+                            //the first time the page loads, we launch already the first 1 minute function
+                            console.log("it's the first full minute")
+                            this.getSnapshot("oneMin")
+
+                            //if it happens that the page loads on a 5 minute time, we launch the 5 minute function
+                            /*if ((minuteDate.getMinutes() % 5) == 0) {
+                                    console.log("it's a the first full 5 minute")
+                                    this.getSnapshot("fiveMin")
+                                }*/
+
+                            //1 MINUTE INTERVAL
+                            this.oneMinInterval = setInterval(() => {
+                                var minuteDate = new Date();
+                                //console.log("it's a new full minute and minutes left to full 05 is " + minuteDate.getMinutes() + " and divided is " + (minuteDate.getMinutes() % 5))
+                                this.getSnapshot("oneMin")
+
+                                /*if ((minuteDate.getMinutes() % 5) == 0) {
+                                        console.log("it's a new full 5 minute")
+                                        this.getSnapshot("fiveMin")
+                                    }*/
+                            }, 60 * 1000);
+
+                            //SECONDS INTERVAL (can be updated via variable)
+                            this.secInterval = setInterval(() => {
+                                //console.log("it's a new " + this.secUpdate + "second update")
+                                this.getSnapshot("secUpdate")
+
+                            }, this.secUpdate * 1000);
+
+                        }, (60 - date.getSeconds()) * 1000);
+                    },
+                    stopIntervals() {
+                        console.log("CLEARING TIMEOUT AND INTERVALS")
+                        clearTimeout(this.originalTimeout)
+                        clearInterval(this.oneMinInterval)
+                        clearInterval(this.secInterval)
+                    },
+                    getSnapshot(param) {
+                        console.log(param.toUpperCase() + " SNAPSHOT")
+                        if (param == "fiveMin") {
+                            this.fiveMinSnapshot = []
+                        }
+                        if (param == "oneMin") {
+                            this.oneMinSnapshot = []
+                        }
+                        if (param == "secUpdate") {
+                            if (!!this.secSnapshot && this.secSnapshot.find(secItem => moment().diff(moment.unix(secItem.time), 'seconds') >= this.secUpdate && moment().diff(moment.unix(secItem.time), 'seconds') < 2 * this.secUpdate)) {
+                                console.log("last secupdate array is " + JSON.stringify(this.secSnapshot.find(secItem => moment().diff(moment.unix(secItem.time), 'seconds') >= this.secUpdate && moment().diff(moment.unix(secItem.time), 'seconds') < 2 * this.secUpdate)))
+                            }
+                        }
+                        var i
+                        var j
+                        var maxNumber = this.tickerArray.length
+                        var maxBatch = 1500
+                        //console.log("Ticker array lenght " + this.tickerArray.length)
+                        for (i = 0; i < maxNumber; i += maxBatch) {
+                            let nextBatch
+                            let url
+                            //console.log("ITERATION " + (i + 1) + " to " + (i + maxBatch))
+                            if ((maxNumber - i) >= maxBatch) {
+                                nextBatch = maxBatch
+                            } else {
+                                nextBatch = maxNumber - i
+                            }
+                            //console.log("Slice start " + i + " and  last value " + (i + nextBatch))
+                            //console.log("Next batch " + nextBatch + " max batch " + maxBatch)
+                            //console.log("Arrray slice "+this.tickerArray.slice(i,(i + nextBatch)))
+
+                            url = "scripts/stockQuote.php"
+                            axios
+                                .post(url, {
+                                    quoteUrl: "https://financialmodelingprep.com/api/v3/quote/" + this
+                                        .tickerArray
+                                        .slice(i, (i + nextBatch))
+                                })
+                                /*url = "https://financialmodelingprep.com/api/v3/quote/" + this
+                                .tickerArray
+                                .slice(i, (i + nextBatch))
+                            console.log("URL is " + url)
+
+                            axios
+                                .get(url, {
+                                    params: {
+                                        apikey: "be8c2918df008d007b5932767622e146"
+                                    }
+                                })*/
+                                .then(response => {
+                                    //console.log("response "+JSON.stringify(response))
+                                    if (param == "fiveMin" || param == "oneMin") {
+                                        //console.log("URL is " + url)
+                                        //console.log("Axios count " + response.data.length)
+                                        //console.log("Next batch " + nextBatch + " max batch " + maxBatch)
+                                        //console.log("fiveMinSnapshot is " + JSON.stringify(response.data))
+                                        var minVol = this.minVolume
+                                        var maxVol = this.maxVolume
+                                        var minPx = this.minPrice
+                                        var maxPx = this.maxPrice
+
+                                        //console.log("minVol " + minVol + " maxVol " + maxVol + " minPx " + minPx + " maxPx " + maxPx)
+
+                                        var filterData = response
+                                            .data
+                                            .filter(function (fil) {
+                                                return fil.price >= minPx && fil.price <= maxPx && fil.volume >= minVol && fil.volume < maxVol && fil.marketCap < 2000000000
+                                            });
+                                        if (param == "fiveMin") {
+                                            this.fiveMinSnapshot = [
+                                                ...this.fiveMinSnapshot,
+                                                ...filterData
+                                            ]
+                                        }
+                                        if (param == "oneMin") {
+                                            this.oneMinSnapshot = [
+                                                ...this.oneMinSnapshot,
+                                                ...filterData
+                                            ]
+                                        }
+                                    }
+                                    if (param == "secUpdate") {
+                                        response
+                                            .data
+                                            .forEach(updateItem => {
+                                                /*if (!!this.fiveMinSnapshot && this.fiveMinSnapshot.find(fiveMinItem => fiveMinItem.symbol === updateItem.symbol) != undefined) {
+                                                    var fiveMinObject = this
+                                                        .fiveMinSnapshot
+                                                        .find(fiveMinItem => fiveMinItem.symbol === updateItem.symbol)
+                                                    //console.log("There is a match. Five min object is " + JSON.stringify(fiveMinObject) + " and updateItem object is " + JSON.stringify(updateItem))
+                                                    if ((updateItem.price - fiveMinObject.price) > 0.25) {
+                                                        var tempSec = {}
+                                                        console.log("FIVE MIN COMPARISON\nPrice increase of 10 cents or more for symbol " + updateItem.symbol + ". Old price " + fiveMinObject.price + " and new price " + updateItem.price + " so increase of " + (
+                                                        updateItem.price - fiveMinObject.price))
+
+                                                        tempSec.time = updateItem.timestamp
+                                                        tempSec.symbol = updateItem.symbol
+                                                        tempSec.strategy = "Price increase 5 minutes"
+                                                        tempSec.snapPrice = parseFloat(fiveMinObject.price).toFixed(2)
+                                                        tempSec.updatePrice = parseFloat(updateItem.price).toFixed(2)
+                                                        tempSec.priceIncrease = parseFloat((updateItem.price - fiveMinObject.price)).toFixed(2)
+                                                        tempSec.priceIncreasePc = parseFloat(((updateItem.price - fiveMinObject.price) / fiveMinObject.price) * 100).toFixed(2)
+
+                                                        //console.log("temp " + JSON.stringify(tempSec))
+
+                                                        this
+                                                            .secSnapshot
+                                                            .unshift(tempSec)
+                                                    }
+                                                }*/
+
+                                                if (!!this.oneMinSnapshot && this.oneMinSnapshot.find(oneMinItem => oneMinItem.symbol === updateItem.symbol) != undefined) {
+                                                    var oneMinObject = this
+                                                        .oneMinSnapshot
+                                                        .find(oneMinItem => oneMinItem.symbol === updateItem.symbol)
+                                                    //console.log("There is a match. one min object is " + JSON.stringify(oneMinObject) + " and updateItem object is " + JSON.stringify(updateItem))
+                                                    var priceDiff = updateItem.price - oneMinObject.price
+                                                    var pricePc = ((updateItem.price - oneMinObject.price) / oneMinObject.price) * 100
+                                                    var volumePc = ((updateItem.volume - oneMinObject.volume) / oneMinObject.volume) * 100
+
+                                                    if (priceDiff >= this.minPriceDiff && pricePc >= this.minPricePc && updateItem.volume > 0) {
+                                                        if (this.sound) {
+                                                            //console.log ("sound is ON so text to speech")
+                                                            /* Google US English(49), Google UK English Female (50), Google UK English Male (51), Thomas (0), Alex (1), Alice (2) */
+                                                            var msg = new SpeechSynthesisUtterance();
+                                                            var voices = speechSynthesis.getVoices();
+                                                            msg.voice = voices[49];
+                                                            msg.rate = 0.9; // From 0.1 to 10
+                                                            msg.lang = 'en';
+                                                            msg.text = updateItem.symbol;
+                                                            window
+                                                                .speechSynthesis
+                                                                .speak(msg);
+                                                        }
+
+                                                        var tempSec = {}
+                                                        /*console.log("ONE MIN COMPARISON\nPrice increase of 10 cents or more for symbol " + updateItem.symbol + ". Old price " + oneMinObject.price + " and new price " + updateItem.price + " so increase of " + (
+                                                        updateItem.price - oneMinObject.price))*/
+                                                        url = "scripts/finviz.php"
+                                                        var shareFloat
+                                                        axios
+                                                            .post(url, {
+                                                                params: {
+                                                                    symbol: updateItem.symbol
+                                                                }
+                                                            })
+                                                            .then(response => {
+                                                                console.log(" -> Stock " + updateItem.symbol + " has Float " + response.data)
+                                                                shareFloat = response.data
+                                                                tempSec.time = updateItem.timestamp
+                                                                tempSec.symbol = updateItem.symbol
+                                                                tempSec.strategy = "Price up 1mn"
+                                                                tempSec.snapPrice = parseFloat(oneMinObject.price).toFixed(2)
+                                                                tempSec.updatePrice = parseFloat(updateItem.price).toFixed(2)
+                                                                tempSec.volume = updateItem.volume
+                                                                tempSec.float = shareFloat
+                                                                if (shareFloat == null || shareFloat == 0) {
+                                                                    tempSec.floatRatio = 0
+                                                                } else {
+                                                                    tempSec.floatRatio = parseFloat(updateItem.volume / shareFloat).toFixed(2)
+                                                                }
+                                                                tempSec.priceIncrease = parseFloat(priceDiff).toFixed(2)
+                                                                tempSec.priceIncreasePc = parseFloat(pricePc).toFixed(2)
+                                                                tempSec.volumeChange = parseFloat(volumePc).toFixed(2)
+
+                                                                //console.log("temp " + JSON.stringify(tempSec))
+                                                                /**/
+                                                                this
+                                                                    .secSnapshot
+                                                                    .unshift(tempSec)
+
+                                                            })
+                                                            .catch(e => {
+                                                                console.log("error " + e)
+                                                            })
+
+                                                        }
+                                                }
+                                            })
+                                    }
+
+                                })
+                                .catch(e => {
+
+                                    console.log(" -> Shapshot error " + e)
+                                })
+
+                            }
+
+                    },
+                    getSnapshotLog() {
+                        console.log('fiveMin snapshot is ' + JSON.stringify(this.fiveMinSnapshot))
+                        //console.log("Snapshot type is "+typeof(this.fiveMinSnapshot)+" and find is "+this.fiveMinSnapshot[0].find(el => el.symbol === "CBAT"))
+                    }
+                }
+            })
+        </script>
+    </body>
+</html>

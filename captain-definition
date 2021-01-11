@@ -1,0 +1,16 @@
+{
+    "schemaVersion": 2,
+    "dockerfileLines" :[
+                        "FROM php:7.4",
+                        "RUN apt-get update && apt-get install -y libfreetype6-dev sudo git curl unzip wget nano tzdata libjpeg-dev libpng-dev libwebp-dev && rm -r /var/lib/apt/lists/",
+                        "RUN mkdir -p /usr/local/bin/ && curl -s -o installer.php \"https://getcomposer.org/installer\" && php installer.php --install-dir=/usr/local/bin --filename=composer && rm -f installer.php",
+                        "RUN mkdir -p /var/www/html/",
+                        "WORKDIR /var/www/html",
+                        "ADD . /var/www/html/",
+                        "RUN composer install",
+                        "ARG FMP_API=${FMP_API}",
+                        "RUN ( echo FMP_API=$FMP_API > /var/www/html/.env",
+                        "CMD [\"php\", \"-S\", \"[::]:80\", \"-t\", \"/var/www/html/dist\"]",
+                        "EXPOSE 80"
+                       ]
+   }
