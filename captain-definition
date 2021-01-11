@@ -9,7 +9,7 @@
                         "ADD . /var/www/html/",
                         "RUN composer install",
                         "ARG FMP_API=${FMP_API}",
-                        "RUN ( echo FMP_API=$FMP_API > /var/www/html/.env",
+                        "RUN ( echo FMP_API=$FMP_API ) > /var/www/html/.env",
                         "CMD [\"php\", \"-S\", \"[::]:80\", \"-t\", \"/var/www/html/dist\"]",
                         "EXPOSE 80"
                        ]
