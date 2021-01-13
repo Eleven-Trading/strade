@@ -1,6 +1,6 @@
 <?php
 header('Access-Control-Allow-Origin: *');
-require_once __DIR__ . '../../../credentials.php'; // is the same as require_once dirname(dirname(dirname(__FILE__))). '/credentials.php'; => you go from current directory and move up 3 times
+require_once __DIR__ . '../../../credentials.php';
 
 $shsFloat = null;
 $data = json_decode(file_get_contents("php://input"), true);

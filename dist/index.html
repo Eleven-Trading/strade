@@ -97,7 +97,7 @@
                                 <td>{{snapshot.updatePrice}}</td>
                                 <td>
                                     <span v-if="snapshot.volume<1000000">{{Math.ceil(snapshot.volume/1000)}}k</span><span v-else>{{parseFloat(snapshot.volume/1000000).toFixed(1)}}M</span></td>
-                                <td>
+                                <td v-bind:class="{'red': snapshot.float>=1000000}">
                                     <span v-if="snapshot.float<1000000">{{Math.ceil(snapshot.float/1000)}}k</span><span v-else>{{parseFloat(snapshot.float/1000000).toFixed(1)}}M</span></td>
 
                                 <td v-bind:class="{'green1': snapshot.floatRatio>=0.5 && snapshot.floatRatio<1, 'green2': snapshot.floatRatio>=1 && snapshot.floatRatio<1.5, 'green3': snapshot.floatRatio>=1.5 && snapshot.floatRatio<2, 'green4': snapshot.floatRatio>=2}">{{snapshot.floatRatio}}</td>
@@ -136,7 +136,6 @@
                         *
                         ********************************************************* -->
         <script>
-
             const vueApp = new Vue({
 
                 components: {}, el: '#vapp',
@@ -147,6 +146,7 @@
                                 ***********************/
                 data() {
                     return {
+                        FMP_API: null,
                         sound: true,
                         voice: 49,
                         originalTimeout: null,
@@ -309,42 +309,19 @@
                                 * CREATED
                                 *
                                 ***********************/
-                created() {},
+                beforeCreated() {},
 
                 /***********************
                                 *
                                 * MOUNTED
                                 *
                                 ***********************/
-                mounted() {
-                    speechSynthesis
-                        .getVoices()
-                        .forEach(function (voice, index) {
-                            console.log("voice name " + voice.name + "  and index " + index);
-                        })
+                mounted: async function () {
+                    this.FMP_API = await this.getApiKeys()
 
-                    console.log("GETTING TICKER LIST")
-                    url = "scripts/tickerList.php"
-                    axios
-                        .post(url, {})
-                        .then(response => {
-                            var tickerArray = []
-                            //console.log(" -> full ticker list " + JSON.stringify(response.data))
-                            for (key in response.data) {
+                    this.tickerArray = await this.getTickerList(this.FMP_API)
 
-                                tickerArray.push(response.data[key].symbol)
-                            }
-                            //console.log(" -> Ticker array : " + JSON.stringify(tickerArray))
-                            this.tickerArray = tickerArray
-
-                        })
-                        .catch(e => {
-
-                            console.log("error " + e)
-                        })
-                        //
-                        this
-                        .startIntervals()
+                    await this.startIntervals()
 
                 },
 
@@ -361,27 +338,56 @@
                                 *
                                 ***********************/
                 methods: {
-                    tts() {
-                        var msg = new SpeechSynthesisUtterance();
-                        var voices = speechSynthesis.getVoices();
-                        msg.voice = voices[51];
-                        //msg.volume = 1;  From 0 to 1
-                        msg.rate = 0.9; // From 0.1 to 10
-                        //msg.pitch = 2;  From 0 to 2
-                        msg.lang = 'en';
-                        msg.text = "KXIN";
-                        window
-                            .speechSynthesis
-                            .speak(msg);
-                        /*speechSynthesis
-                                .getVoices()
-                                .forEach(function (voice, index) {
-                                    console.log("voice name "+voice.name+"  and index "+index);
-                                });*/
+                    getApiKeys() {
+                        console.log("GETTING API KEYS")
+                        return new Promise(function (resolve) {
+                            url = "scripts/apiKeys.php"
+                            axios
+                                .post(url, {})
+                                .then(response => {
+                                    resolve(response.data)
+                                })
+                                .catch(e => {
+
+                                    console.log("error " + e)
+                                })
+                            })
+
+                    },
+                    getTickerList(param) {
+                        console.log("GETTING TICKER LIST ")
+                        return new Promise(function (resolve) {
+                            url = "https://financialmodelingprep.com/api/v3/stock-screener"
+                            axios
+                                .get(url, {
+                                    params: {
+                                        marketCapLowerThan: 2000000000,
+                                        volumeLessThan: 500000000,
+                                        exchange: 'NYSE,NASDAQ,amex',
+                                        apikey: param
+                                    }
+                                })
+                                .then(response => {
+                                    var tickerArray = []
+                                    //console.log(" -> full ticker list " + JSON.stringify(response.data))
+                                    for (key in response.data) {
+
+                                        tickerArray.push(response.data[key].symbol)
+                                    }
+                                    //console.log(" -> Ticker list : " + tickerArray)
+                                    resolve(tickerArray)
+
+                                })
+                                .catch(e => {
+
+                                    console.log("error " + e)
+                                })
+                            })
                     },
                     startIntervals() {
                         this.stopIntervals()
                         console.log("STARTING TIMER WITH 1 MIN AND " + this.secUpdate + " SEC INTERVAL")
+                        //console.log(" -> Ticker array : " + JSON.stringify(this.tickerArray))
                         var date = new Date();
                         console.log((60 - date.getSeconds()) + " seconds left to full minute")
                         this.originalTimeout = setTimeout(() => {
@@ -389,12 +395,6 @@
                             //the first time the page loads, we launch already the first 1 minute function
                             console.log("it's the first full minute")
                             this.getSnapshot("oneMin")
-
-                            //if it happens that the page loads on a 5 minute time, we launch the 5 minute function
-                            /*if ((minuteDate.getMinutes() % 5) == 0) {
-                                    console.log("it's a the first full 5 minute")
-                                    this.getSnapshot("fiveMin")
-                                }*/
 
                             //1 MINUTE INTERVAL
                             this.oneMinInterval = setInterval(() => {
@@ -450,41 +450,25 @@
                             } else {
                                 nextBatch = maxNumber - i
                             }
-                            //console.log("Slice start " + i + " and  last value " + (i + nextBatch))
-                            //console.log("Next batch " + nextBatch + " max batch " + maxBatch)
-                            //console.log("Arrray slice "+this.tickerArray.slice(i,(i + nextBatch)))
 
-                            url = "scripts/stockQuote.php"
-                            axios
-                                .post(url, {
-                                    quoteUrl: "https://financialmodelingprep.com/api/v3/quote/" + this
-                                        .tickerArray
-                                        .slice(i, (i + nextBatch))
-                                })
-                                /*url = "https://financialmodelingprep.com/api/v3/quote/" + this
+                            url = "https://financialmodelingprep.com/api/v3/quote/" + this
                                 .tickerArray
                                 .slice(i, (i + nextBatch))
-                            console.log("URL is " + url)
+                            //console.log("URL is " + url)
 
                             axios
                                 .get(url, {
                                     params: {
-                                        apikey: "be8c2918df008d007b5932767622e146"
+                                        apikey: this.FMP_API
                                     }
-                                })*/
+                                })
                                 .then(response => {
-                                    //console.log("response "+JSON.stringify(response))
+                                    //console.log("response "+JSON.stringify(response.data))
                                     if (param == "fiveMin" || param == "oneMin") {
-                                        //console.log("URL is " + url)
-                                        //console.log("Axios count " + response.data.length)
-                                        //console.log("Next batch " + nextBatch + " max batch " + maxBatch)
-                                        //console.log("fiveMinSnapshot is " + JSON.stringify(response.data))
                                         var minVol = this.minVolume
                                         var maxVol = this.maxVolume
                                         var minPx = this.minPrice
                                         var maxPx = this.maxPrice
-
-                                        //console.log("minVol " + minVol + " maxVol " + maxVol + " minPx " + minPx + " maxPx " + maxPx)
 
                                         var filterData = response
                                             .data
@@ -508,32 +492,6 @@
                                         response
                                             .data
                                             .forEach(updateItem => {
-                                                /*if (!!this.fiveMinSnapshot && this.fiveMinSnapshot.find(fiveMinItem => fiveMinItem.symbol === updateItem.symbol) != undefined) {
-                                                    var fiveMinObject = this
-                                                        .fiveMinSnapshot
-                                                        .find(fiveMinItem => fiveMinItem.symbol === updateItem.symbol)
-                                                    //console.log("There is a match. Five min object is " + JSON.stringify(fiveMinObject) + " and updateItem object is " + JSON.stringify(updateItem))
-                                                    if ((updateItem.price - fiveMinObject.price) > 0.25) {
-                                                        var tempSec = {}
-                                                        console.log("FIVE MIN COMPARISON\nPrice increase of 10 cents or more for symbol " + updateItem.symbol + ". Old price " + fiveMinObject.price + " and new price " + updateItem.price + " so increase of " + (
-                                                        updateItem.price - fiveMinObject.price))
-
-                                                        tempSec.time = updateItem.timestamp
-                                                        tempSec.symbol = updateItem.symbol
-                                                        tempSec.strategy = "Price increase 5 minutes"
-                                                        tempSec.snapPrice = parseFloat(fiveMinObject.price).toFixed(2)
-                                                        tempSec.updatePrice = parseFloat(updateItem.price).toFixed(2)
-                                                        tempSec.priceIncrease = parseFloat((updateItem.price - fiveMinObject.price)).toFixed(2)
-                                                        tempSec.priceIncreasePc = parseFloat(((updateItem.price - fiveMinObject.price) / fiveMinObject.price) * 100).toFixed(2)
-
-                                                        //console.log("temp " + JSON.stringify(tempSec))
-
-                                                        this
-                                                            .secSnapshot
-                                                            .unshift(tempSec)
-                                                    }
-                                                }*/
-
                                                 if (!!this.oneMinSnapshot && this.oneMinSnapshot.find(oneMinItem => oneMinItem.symbol === updateItem.symbol) != undefined) {
                                                     var oneMinObject = this
                                                         .oneMinSnapshot
@@ -559,8 +517,8 @@
                                                         }
 
                                                         var tempSec = {}
-                                                        /*console.log("ONE MIN COMPARISON\nPrice increase of 10 cents or more for symbol " + updateItem.symbol + ". Old price " + oneMinObject.price + " and new price " + updateItem.price + " so increase of " + (
-                                                        updateItem.price - oneMinObject.price))*/
+                                                        console.log("ONE MIN COMPARISON\nPrice increase of 10 cents or more for symbol " + updateItem.symbol + ". Old price " + oneMinObject.price + " and new price " + updateItem.price + " so increase of " + (
+                                                        updateItem.price - oneMinObject.price))
                                                         url = "scripts/finviz.php"
                                                         var shareFloat
                                                         axios
