@@ -25,7 +25,7 @@ Include logo/demo screenshot etc.
 ### Prerequisites
 #### Software and tools
 - Gulp for building the project
-- Financial Modeling Prep account and API access (https://financialmodelingprep.com)
+- Financial Modeling Prep account and API access (https://financialmodelingprep.com).
 
 ### Installation
 
