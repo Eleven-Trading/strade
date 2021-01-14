@@ -97,7 +97,7 @@
                                 <td>{{snapshot.updatePrice}}</td>
                                 <td>
                                     <span v-if="snapshot.volume<1000000">{{Math.ceil(snapshot.volume/1000)}}k</span><span v-else>{{parseFloat(snapshot.volume/1000000).toFixed(1)}}M</span></td>
-                                <td v-bind:class="{'red': snapshot.float>=1000000}">
+                                <td v-bind:class="{'red': snapshot.float<20000000 || snapshot.float>100000000}">
                                     <span v-if="snapshot.float<1000000">{{Math.ceil(snapshot.float/1000)}}k</span><span v-else>{{parseFloat(snapshot.float/1000000).toFixed(1)}}M</span></td>
 
                                 <td v-bind:class="{'green1': snapshot.floatRatio>=0.5 && snapshot.floatRatio<1, 'green2': snapshot.floatRatio>=1 && snapshot.floatRatio<1.5, 'green3': snapshot.floatRatio>=1.5 && snapshot.floatRatio<2, 'green4': snapshot.floatRatio>=2}">{{snapshot.floatRatio}}</td>
@@ -355,7 +355,7 @@
 
                     },
                     getTickerList(param) {
-                        console.log("GETTING TICKER LIST")
+                        console.log("GETTING TICKER LIST ")
                         return new Promise(function (resolve) {
                             url = "https://financialmodelingprep.com/api/v3/stock-screener"
                             axios
