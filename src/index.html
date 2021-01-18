@@ -455,7 +455,6 @@
                                 .tickerArray
                                 .slice(i, (i + nextBatch))
                             //console.log("URL is " + url)
-
                             axios
                                 .get(url, {
                                     params: {
@@ -500,7 +499,7 @@
                                                     var priceDiff = updateItem.price - oneMinObject.price
                                                     var pricePc = ((updateItem.price - oneMinObject.price) / oneMinObject.price) * 100
                                                     var volumePc = ((updateItem.volume - oneMinObject.volume) / oneMinObject.volume) * 100
-
+                                                    console.log("volume pc "+volumePc)
                                                     if (priceDiff >= this.minPriceDiff && pricePc >= this.minPricePc && volumePc > 0) {
                                                         if (this.sound) {
                                                             //console.log ("sound is ON so text to speech")
