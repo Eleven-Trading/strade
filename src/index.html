@@ -322,11 +322,22 @@
                                 *
                                 ***********************/
                 mounted: async function () {
+                    /*
+                    *1. Get API keys
+                    */
                     this.FMP_API = await this.getApiKeys()
 
+                    /*
+                    *2. Get list of tickers to observer
+                    */
                     this.tickerArray = await this.getTickerList(this.FMP_API)
-
+                    
+                    /*
+                    *3. Compare ticker list to one minute and second values (making sure not to overlap each other => start at full minute and setTimeout for sec update, 8 seconds later)
+                    */
                     await this.startIntervals()
+
+                    //Other
                     const ut = new SpeechSynthesisUtterance('No warning should arise');
                     speechSynthesis.speak(ut);
 
@@ -345,6 +356,8 @@
                                 *
                                 ***********************/
                 methods: {
+                    
+                    //GET API KEYS
                     getApiKeys() {
                         console.log("GETTING API KEYS")
                         return new Promise(function (resolve) {
@@ -361,6 +374,8 @@
                             })
 
                     },
+
+                    //GET TICKER LIST
                     getTickerList(param) {
                         console.log("GETTING TICKER LIST ")
                         return new Promise(function (resolve) {
@@ -391,6 +406,8 @@
                                 })
                             })
                     },
+
+                    //START INTERVALS
                     startIntervals() {
                         this.stopIntervals()
                         console.log("STARTING TIMER WITH 1 MIN AND " + this.secUpdate + " SEC INTERVAL")
@@ -444,6 +461,8 @@
                         }, (60 - date.getSeconds()) * 1000);
 
                     },
+
+                    //STOP INTERVALS
                     stopIntervals() {
                         console.log("CLEARING TIMEOUT AND INTERVALS")
                         clearTimeout(this.originalTimeout)
@@ -453,6 +472,8 @@
                         clearTimeout(this.newOneMinInterval)
                         clearTimeout(this.newSecInterval)
                     },
+
+                    //GET SNAPSHOTS (1 MINUTE AND SECONDS)
                     getSnapshot(param) {
                         var date = new Date();
                         console.log(param.toUpperCase() + " SNAPSHOT at " + date.getSeconds())
@@ -613,10 +634,6 @@
 
                             }
 
-                    },
-                    getSnapshotLog() {
-                        console.log('fiveMin snapshot is ' + JSON.stringify(this.fiveMinSnapshot))
-                        //console.log("Snapshot type is "+typeof(this.fiveMinSnapshot)+" and find is "+this.fiveMinSnapshot[0].find(el => el.symbol === "CBAT"))
                     }
                 }
             })
