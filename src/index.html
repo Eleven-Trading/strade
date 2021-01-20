@@ -150,8 +150,13 @@
                         sound: true,
                         voice: 49,
                         originalTimeout: null,
+                        firstSecInterval: null,
                         oneMinInterval: null,
                         secInterval: null,
+                        newOneMinInterval: null,
+                        newSecInterval: null,
+                        gettingOneMinSnapshot: false,
+                        gettingSecSnapshot: false,
                         secUpdate: 10,
                         minVolume: 750000,
                         minVolumeArray: [
@@ -322,6 +327,8 @@
                     this.tickerArray = await this.getTickerList(this.FMP_API)
 
                     await this.startIntervals()
+                    const ut = new SpeechSynthesisUtterance('No warning should arise');
+                    speechSynthesis.speak(ut);
 
                 },
 
@@ -390,41 +397,65 @@
                         //console.log(" -> Ticker array : " + JSON.stringify(this.tickerArray))
                         var date = new Date();
                         console.log((60 - date.getSeconds()) + " seconds left to full minute")
-                        this.originalTimeout = setTimeout(() => {
+
+                        this.originalTimeout = setTimeout(() => { //setTimeout = wait for full minute to start
+
                             var minuteDate = new Date();
                             //the first time the page loads, we launch already the first 1 minute function
                             console.log("it's the first full minute")
                             this.getSnapshot("oneMin")
 
                             //1 MINUTE INTERVAL
-                            this.oneMinInterval = setInterval(() => {
-                                var minuteDate = new Date();
-                                //console.log("it's a new full minute and minutes left to full 05 is " + minuteDate.getMinutes() + " and divided is " + (minuteDate.getMinutes() % 5))
-                                this.getSnapshot("oneMin")
-
-                                /*if ((minuteDate.getMinutes() % 5) == 0) {
-                                        console.log("it's a new full 5 minute")
-                                        this.getSnapshot("fiveMin")
-                                    }*/
-                            }, 60 * 1000);
+                            oneMinFunction = () => {
+                                this.oneMinInterval = setInterval(() => {
+                                    this.gettingOneMinSnapshot = true
+                                    if (this.gettingSecSnapshot == false) {
+                                        var minuteDate = new Date();
+                                        //console.log("it's a new full minute and minutes left to full 05 is " + minuteDate.getMinutes() + " and divided is " + (minuteDate.getMinutes() % 5))
+                                        this.getSnapshot("oneMin")
+                                    } else {
+                                        console.log("Sec Snapshot is running")
+                                        clearInterval(this.oneMinInterval)
+                                        this.newOneMinInterval = setTimeout(oneMinFunction, 300); // try again in 300 milliseconds
+                                    }
+                                }, 60 * 1000);
+                            }
+                            oneMinFunction()
 
                             //SECONDS INTERVAL (can be updated via variable)
-                            this.secInterval = setInterval(() => {
-                                //console.log("it's a new " + this.secUpdate + "second update")
+                            secFunction = () => {
+                                console.log("it's the first sec update")
                                 this.getSnapshot("secUpdate")
+                                this.secInterval = setInterval(() => {
+                                    this.gettingSecSnapshot = true
+                                    if (this.gettingOneMinSnapshot == false) {
+                                        this.getSnapshot("secUpdate")
+                                    } else {
+                                        console.log("OneMin Snapshot is running. Setting new interval")
+                                        clearInterval(this.secInterval)
+                                        this.newSecInterval = setTimeout(secFunction, 8000); // try again in 300 milliseconds
+                                    }
+                                    //console.log("it's a new " + this.secUpdate + "second update")
 
-                            }, this.secUpdate * 1000);
+                                }, this.secUpdate * 1000);
+                            }
+                            this.firstSecInterval = setTimeout(secFunction, 8000)
 
                         }, (60 - date.getSeconds()) * 1000);
+
                     },
                     stopIntervals() {
                         console.log("CLEARING TIMEOUT AND INTERVALS")
                         clearTimeout(this.originalTimeout)
+                        clearTimeout(this.firstSecInterval)
                         clearInterval(this.oneMinInterval)
                         clearInterval(this.secInterval)
+                        clearTimeout(this.newOneMinInterval)
+                        clearTimeout(this.newSecInterval)
                     },
                     getSnapshot(param) {
-                        console.log(param.toUpperCase() + " SNAPSHOT")
+                        var date = new Date();
+                        console.log(param.toUpperCase() + " SNAPSHOT at " + date.getSeconds())
                         if (param == "fiveMin") {
                             this.fiveMinSnapshot = []
                         }
@@ -433,13 +464,14 @@
                         }
                         if (param == "secUpdate") {
                             if (!!this.secSnapshot && this.secSnapshot.find(secItem => moment().diff(moment.unix(secItem.time), 'seconds') >= this.secUpdate && moment().diff(moment.unix(secItem.time), 'seconds') < 2 * this.secUpdate)) {
-                                console.log("last secupdate array is " + JSON.stringify(this.secSnapshot.find(secItem => moment().diff(moment.unix(secItem.time), 'seconds') >= this.secUpdate && moment().diff(moment.unix(secItem.time), 'seconds') < 2 * this.secUpdate)))
+                                //console.log("last secupdate array is " + JSON.stringify(this.secSnapshot.find(secItem => moment().diff(moment.unix(secItem.time), 'seconds') >= this.secUpdate && moment().diff(moment.unix(secItem.time), 'seconds') < 2 * this.secUpdate)))
                             }
                         }
                         var i
-                        var j
+                        var j = 1
                         var maxNumber = this.tickerArray.length
                         var maxBatch = 1500
+                        var numIterations = maxNumber / maxBatch
                         //console.log("Ticker array lenght " + this.tickerArray.length)
                         for (i = 0; i < maxNumber; i += maxBatch) {
                             let nextBatch
@@ -447,7 +479,7 @@
                             //console.log("ITERATION " + (i + 1) + " to " + (i + maxBatch))
                             if ((maxNumber - i) >= maxBatch) {
                                 nextBatch = maxBatch
-                            } else {
+                            } else { // this is last loop
                                 nextBatch = maxNumber - i
                             }
 
@@ -462,6 +494,7 @@
                                     }
                                 })
                                 .then(response => {
+                                    console.log(" -> " + param.toUpperCase() + " data retrieved from FMP")
                                     //console.log("response "+JSON.stringify(response.data))
                                     if (param == "fiveMin" || param == "oneMin") {
                                         var minVol = this.minVolume
@@ -481,10 +514,16 @@
                                             ]
                                         }
                                         if (param == "oneMin") {
+                                            //console.log("oneMin iteration " + j )
+                                            if (j >= numIterations) { //getting last iteration
+                                                this.gettingOneMinSnapshot = false
+                                            }
                                             this.oneMinSnapshot = [
                                                 ...this.oneMinSnapshot,
                                                 ...filterData
                                             ]
+                                            /**/
+                                            ++j
                                         }
                                     }
                                     if (param == "secUpdate") {
@@ -499,7 +538,7 @@
                                                     var priceDiff = updateItem.price - oneMinObject.price
                                                     var pricePc = ((updateItem.price - oneMinObject.price) / oneMinObject.price) * 100
                                                     var volumePc = ((updateItem.volume - oneMinObject.volume) / oneMinObject.volume) * 100
-                                                    console.log("volume pc "+volumePc)
+                                                    //console.log("volume pc "+volumePc)
                                                     if (priceDiff >= this.minPriceDiff && pricePc >= this.minPricePc && volumePc > 0) {
                                                         if (this.sound) {
                                                             //console.log ("sound is ON so text to speech")
@@ -516,8 +555,7 @@
                                                         }
 
                                                         var tempSec = {}
-                                                        console.log("ONE MIN COMPARISON\nPrice increase of 10 cents or more for symbol " + updateItem.symbol + ". Old price " + oneMinObject.price + " and new price " + updateItem.price + " so increase of " + (
-                                                        updateItem.price - oneMinObject.price))
+                                                        //console.log("ONE MIN COMPARISON\nPrice increase of 10 cents or more for symbol " + updateItem.symbol + ". Old price " + oneMinObject.price + " and new price " + updateItem.price + " so increase of " + (updateItem.price - oneMinObject.price))
                                                         url = "scripts/finviz.php"
                                                         var shareFloat
                                                         axios
@@ -527,7 +565,7 @@
                                                                 }
                                                             })
                                                             .then(response => {
-                                                                console.log(" -> Stock " + updateItem.symbol + " has Float " + response.data)
+                                                                //console.log(" -> Stock " + updateItem.symbol + " has Float " + response.data)
                                                                 shareFloat = response.data
                                                                 tempSec.time = updateItem.timestamp
                                                                 tempSec.symbol = updateItem.symbol
@@ -559,12 +597,17 @@
                                                         }
                                                 }
                                             })
+                                        if (j >= numIterations) { //getting last sec iteration
+                                            //console.log("it's the last Sec iteration")
+                                            this.gettingSecSnapshot = false
+                                        }
+                                        ++j
                                     }
 
                                 })
                                 .catch(e => {
 
-                                    console.log(" -> Shapshot error " + e)
+                                    console.log(" -> " + param.toUpperCase() + " shapshot error " + e)
                                 })
 
                             }
