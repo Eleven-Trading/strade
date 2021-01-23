@@ -130,6 +130,7 @@
         <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.20/lodash.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify@3.17.10/dist/tagify.min.js"></script>
+
         <!-- ********************************************************* 
                         *
                         VUEJS
@@ -303,6 +304,7 @@
                             }
                         ],
                         tickerArray: null,
+                        shareFloatArray: null,
                         oneMinSnapshot: [],
                         fiveMinSnapshot: [],
                         secSnapshot: []
@@ -314,7 +316,8 @@
                                 * CREATED
                                 *
                                 ***********************/
-                beforeCreated() {},
+                beforeCreated() {
+                },
 
                 /***********************
                                 *
@@ -323,21 +326,28 @@
                                 ***********************/
                 mounted: async function () {
                     /*
-                    *1. Get API keys
+                    *1. Getting JSON with symbols and share float
+                    */
+                    this.getFloatTickers()
+
+                    /*
+                    *2. Get API keys
                     */
                     this.FMP_API = await this.getApiKeys()
 
                     /*
-                    *2. Get list of tickers to observer
+                    *3. Get list of tickers to observer
                     */
                     this.tickerArray = await this.getTickerList(this.FMP_API)
-                    
+
                     /*
-                    *3. Compare ticker list to one minute and second values (making sure not to overlap each other => start at full minute and setTimeout for sec update, 8 seconds later)
+                    *4. Compare ticker list to one minute and second values (making sure not to overlap each other => start at full minute and setTimeout for sec update, 8 seconds later)
                     */
                     await this.startIntervals()
 
-                    //Other
+                    /*
+                    *5. Avoid annoying speechsynthesis error
+                    */
                     const ut = new SpeechSynthesisUtterance('No warning should arise');
                     speechSynthesis.speak(ut);
 
@@ -356,15 +366,49 @@
                                 *
                                 ***********************/
                 methods: {
-                    
+
+                    //GET JSON WITH SYMBOLS AND SHARE FLOAT
+                    getFloatTickers() {
+                        console.log("GETTING JSON WITH SYMBOLS AND SHARE FLOAT ")
+                        floatTickersUrl = "https://7ak-public.s3.amazonaws.com/floatTickers.json"
+                        //var floatTickers = await (await fetch(floatTickersUrl)).json();
+                        //console.log("JSON is " + JSON.stringify(floatTickers))
+                        axios
+                            .get(floatTickersUrl)
+                            .then((response) => {
+                                this.shareFloatArray = response.data
+                                //console.log("array from remote " + JSON.stringify(this.shareFloatArray))
+                            })
+                            .then(() => {
+                                /*console
+                                    .log("THEN array from remote " + JSON.stringify(this.shareFloatArray))
+                                var ticker = this
+                                    .shareFloatArray
+                                    .find(el => el.symbol === "STTK");
+                                console.log("ticker float from JSON is symbol " + ticker["symbol"] + " and float " + ticker["shsFloat"]);*/
+                            })
+                            .catch(function (error) {
+                                console.log(error);
+                            });
+                    },
+
                     //GET API KEYS
                     getApiKeys() {
                         console.log("GETTING API KEYS")
                         return new Promise(function (resolve) {
-                            url = "scripts/apiKeys.php"
+                        var baseUrl
+                        var endpoint = "eleven/apiKeys.php"
+                        if (window.location.hostname == "localhost"){
+                            baseUrl = "http://localhost:8888/"
+                            }else {
+                               baseUrl = "http://srv-captain--functions/"
+                            }
+                             
+                            url = baseUrl+""+endpoint
                             axios
-                                .post(url, {})
+                                .get(url, {})
                                 .then(response => {
+                                console.log(" -> Success retrieving FMP API key")
                                     resolve(response.data)
                                 })
                                 .catch(e => {
@@ -578,45 +622,43 @@
 
                                                         var tempSec = {}
                                                         //console.log("ONE MIN COMPARISON\nPrice increase of 10 cents or more for symbol " + updateItem.symbol + ". Old price " + oneMinObject.price + " and new price " + updateItem.price + " so increase of " + (updateItem.price - oneMinObject.price))
-                                                        url = "scripts/finviz.php"
-                                                        var shareFloat
-                                                        axios
-                                                            .post(url, {
-                                                                params: {
-                                                                    symbol: updateItem.symbol
-                                                                }
-                                                            })
-                                                            .then(response => {
-                                                                //console.log(" -> Stock " + updateItem.symbol + " has Float " + response.data)
-                                                                shareFloat = response.data
-                                                                tempSec.time = updateItem.timestamp
-                                                                tempSec.symbol = updateItem.symbol
-                                                                tempSec.strategy = "Price up 1mn"
-                                                                tempSec.snapPrice = parseFloat(oneMinObject.price).toFixed(2)
-                                                                tempSec.updatePrice = parseFloat(updateItem.price).toFixed(2)
-                                                                tempSec.volume = updateItem.volume
-                                                                tempSec.float = shareFloat
-                                                                if (shareFloat == null || shareFloat == 0) {
-                                                                    tempSec.floatRatio = 0
-                                                                } else {
-                                                                    tempSec.floatRatio = parseFloat(updateItem.volume / shareFloat).toFixed(2)
-                                                                }
-                                                                tempSec.priceIncrease = parseFloat(priceDiff).toFixed(2)
-                                                                tempSec.priceIncreasePc = parseFloat(pricePc).toFixed(2)
-                                                                tempSec.volumeChange = parseFloat(volumePc).toFixed(2)
+                                                        //console.log(" -> Stock " + updateItem.symbol + " has Float " + response.data)
 
-                                                                //console.log("temp " + JSON.stringify(tempSec))
-                                                                /**/
-                                                                this
-                                                                    .secSnapshot
-                                                                    .unshift(tempSec)
-
-                                                            })
-                                                            .catch(e => {
-                                                                console.log("error " + e)
-                                                            })
-
+                                                        //Let's search for float in json
+                                                        var shareFloatSearch = this
+                                                            .shareFloatArray
+                                                            .find(el => el.symbol === updateItem.symbol)
+                                                        console.log("ticker float from JSON is symbol " + ticker["symbol"] + " and float " + ticker["shsFloat"]);
+                                                        if (typeof shareFloatSearch === 'undefined' || shareFloatSearch === null) {
+                                                            shareFloat = null
+                                                        } else {
+                                                            shareFloat = shareFloatSearch["shsFloat"]
                                                         }
+
+                                                        //Let's create the secSnapshot json
+                                                        tempSec.time = updateItem.timestamp
+                                                        tempSec.symbol = updateItem.symbol
+                                                        tempSec.strategy = "Price up 1mn"
+                                                        tempSec.snapPrice = parseFloat(oneMinObject.price).toFixed(2)
+                                                        tempSec.updatePrice = parseFloat(updateItem.price).toFixed(2)
+                                                        tempSec.volume = updateItem.volume
+                                                        tempSec.float = shareFloat
+                                                        if (shareFloat == null || shareFloat == 0) {
+                                                            tempSec.floatRatio = 0
+                                                        } else {
+                                                            tempSec.floatRatio = parseFloat(updateItem.volume / shareFloat).toFixed(2)
+                                                        }
+                                                        tempSec.priceIncrease = parseFloat(priceDiff).toFixed(2)
+                                                        tempSec.priceIncreasePc = parseFloat(pricePc).toFixed(2)
+                                                        tempSec.volumeChange = parseFloat(volumePc).toFixed(2)
+
+                                                        //console.log("temp " + JSON.stringify(tempSec))
+                                                        /**/
+                                                        this
+                                                            .secSnapshot
+                                                            .unshift(tempSec)
+
+                                                    }
                                                 }
                                             })
                                         if (j >= numIterations) { //getting last sec iteration

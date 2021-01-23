@@ -1,11 +1,11 @@
 'use strict'
 
-var gulp = require('gulp');
-var php = require('gulp-connect-php');
-var browserSync = require('browser-sync').create();
-var changed = require('gulp-changed');
-var log = require('fancy-log');
-var clean = require('gulp-clean');
+var gulp = require('gulp')
+var php = require('gulp-connect-php')
+var browserSync = require('browser-sync').create()
+var changed = require('gulp-changed')
+var log = require('fancy-log')
+var clean = require('gulp-clean')
 
 /******** PATHS **********/
 var paths = {
@@ -86,15 +86,20 @@ function cleanDist() {
 
 
 /******** WATCH **********/
-function phpLaunch() {
-    console.log("Launching php server");
-    php.server({ base: 'dist', port: 3000, keepalive: true });
+
+//launch function server
+function phpLaunchFunction() {
+    console.log("Launching php function server");
+    php.server({ base: '../../functions', port: 8888, keepalive: true });
 }
 
+// Gulp task to open the default web browser, serving static files
 function browserInit() {
     browserSync.init({
-        proxy: '127.0.0.1:3000',
         port: 3000,
+        server: {
+            baseDir: "dist"
+        },
         open: true,
         notify: false,
         injectChanges: false
@@ -112,9 +117,8 @@ function watch() {
 }
 
 /******** GULP *********/
-var build = gulp.parallel(cssFunction, iconsFunction, imagesFunction, scriptsFunction, viewsFunction, captainFunction, watch, browserInit, phpLaunch); //les fonction ne sont réellement nécessaires mais si je fait un gulp clean je n'aurais rien dans dist
-
 var prod = gulp.parallel(cssFunction, iconsFunction, imagesFunction, scriptsFunction, viewsFunction, captainFunction);
+var build = gulp.parallel(prod, browserInit, phpLaunchFunction, watch); //run prod is necessary in case clean has beed done before
 
 gulp.task('default', build);
 gulp.task('clean', cleanDist);
