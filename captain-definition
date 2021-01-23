@@ -6,6 +6,6 @@
                         "COPY dist/ /usr/share/nginx/html/", 
                         "WORKDIR /usr/share/nginx/html/",
                         "ARG BASE_URL=${BASE_URL}",
-                        "RUN sed \"s/%%BASE_URL%%/$BASE_URL/g\" index.html && cat index.html > index2.html"
+                        "RUN cat index.html > index2.html && sed \"s/%%BASE_URL%%/$BASE_URL/g\" index2.html"
                        ]
    }
