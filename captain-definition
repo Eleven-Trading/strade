@@ -3,9 +3,7 @@
     "dockerfileLines" :[
                         "FROM nginx:alpine",
                         "RUN apk update && apk add nano",
-                        "COPY dist/ /usr/share/nginx/html/", 
-                        "WORKDIR /usr/share/nginx/html/",
-                        "ARG BASE_URL=${BASE_URL}",
-                        "RUN cat index.html > index2.html && sed \"s/%%BASE_URL%%/$BASE_URL/g\" index2.html"
+                        "RUN sed \"s/%%BASE_URL%%/YO/g\" dist/index.html",
+                        "COPY dist/ /usr/share/nginx/html/"
                        ]
    }
