@@ -316,8 +316,7 @@
                                 * CREATED
                                 *
                                 ***********************/
-                beforeCreated() {
-                },
+                beforeCreated() {},
 
                 /***********************
                                 *
@@ -396,20 +395,25 @@
                     getApiKeys() {
                         console.log("GETTING API KEYS")
                         return new Promise(function (resolve) {
-                        var baseUrl
-                        var endpoint = "eleven/apiKeys.php"
-                        if (window.location.hostname == "localhost"){
-                            baseUrl = "http://localhost:8888/"
-                            }else {
-                               baseUrl = "%%BASE_URL%%"
+                            var baseUrl
+                            var endpoint = "eleven/apiKeys.php"
+                            if (window.location.hostname == "localhost") {
+                                baseUrl = "http://localhost:8888/"
+                            } else {
+                                baseUrl = "%%BASE_URL%%"
                             }
-                             
-                            url = baseUrl+""+endpoint
+
+                            url = baseUrl + "" + endpoint
                             axios
                                 .get(url, {})
                                 .then(response => {
-                                console.log(" -> Success retrieving FMP API key")
-                                    resolve(response.data)
+                                    if (response.data == "Denied") {
+                                        alert("Access denied")
+                                        throw new Error("Access denied!");
+                                    } else {
+                                        console.log(" -> Success retrieving FMP API key")
+                                        resolve(response.data)
+                                    }
                                 })
                                 .catch(e => {
 
