@@ -2,10 +2,9 @@
     "schemaVersion": 2,
     "dockerfileLines" :[
                         "FROM nginx:alpine",
-                        "COPY dist/ /usr/share/nginx/html/",
-                        "RUN cd /usr/share/nginx/html/ && ls", 
+                        "COPY dist/ /usr/share/nginx/html/", 
                         "WORKDIR /usr/share/nginx/html/",
                         "ARG BASE_URL=${BASE_URL}",
-                        "RUN sed \"s/%%BASE_URL%%/YO/\" index.html"
+                        "RUN sed \"s/%%BASE_URL%%/$BASE_URL/\" index.html"
                        ]
    }
