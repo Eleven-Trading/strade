@@ -3,7 +3,7 @@
     "dockerfileLines" :[
                         "FROM nginx:alpine",
                         "COPY dist/ /usr/share/nginx/html/",
-                        "WORKDIR /usr/share/nginx/html/dist",
+                        "WORKDIR /usr/share/nginx/html/dist/",
                         "ARG BASE_URL=${BASE_URL}",
                         "RUN sed \"s/%%BASE_URL%%/YO/\" index.html"
                        ]
