@@ -7,6 +7,7 @@
                         "WORKDIR /usr/share/nginx/html/",
                         "ADD . /usr/share/nginx/html/", 
                         "RUN npm install",
+                        "RUN ls",
                         "ARG BASE_URL=${BASE_URL}",
                         "RUN gulp prod --urlVariable $BASE_URL",
                         "COPY /usr/share/nginx/html/dist/ /usr/share/nginx/html/",
