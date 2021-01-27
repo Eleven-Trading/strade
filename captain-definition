@@ -11,6 +11,5 @@
                         "RUN gulp prod --urlVariable $BASE_URL",
                         "RUN ls",
                         "RUN mv /usr/share/nginx/html/dist/ /usr/share/nginx/html/",
-                        "RUN rm -r /usr/share/nginx/html/dist /usr/share/nginx/html/src" 
                        ]
    }
