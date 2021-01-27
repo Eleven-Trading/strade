@@ -2,6 +2,7 @@
     "schemaVersion": 2,
     "dockerfileLines" :[
                         "FROM nginx:alpine",
-                        "RUN apk update && apk add nano npm"
+                        "RUN apk update && apk add nano npm",
+                        "RUN npm install --global gulp-cli"
                        ]
    }
