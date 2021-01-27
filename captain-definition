@@ -9,6 +9,7 @@
                         "RUN npm install",
                         "ARG BASE_URL=${BASE_URL}",
                         "RUN gulp prod --urlVariable $BASE_URL",
-                        "COPY dist/ /usr/share/nginx/html/"
+                        "COPY /usr/share/nginx/html/dist/ /usr/share/nginx/html/",
+                        "RUN rm -r /usr/share/nginx/html/dist /usr/share/nginx/html/src" 
                        ]
    }
