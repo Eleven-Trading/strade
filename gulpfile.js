@@ -6,6 +6,7 @@ var browserSync = require('browser-sync').create()
 var changed = require('gulp-changed')
 var log = require('fancy-log')
 var clean = require('gulp-clean')
+var replace = require('gulp-replace')
 
 /******** PATHS **********/
 var paths = {
@@ -66,8 +67,14 @@ function scriptsFunction() {
 };
 
 function viewsFunction() {
+    var urlVariable, i = process.argv.indexOf("--urlVariable");
+    if (i > -1) {
+        urlVariable = process.argv[i + 1];
+        console.log("Option is "+urlVariable)
+    }
     return gulp.src(paths.viewsPath.src, { allowEmpty: true })
         //.pipe(changed(paths.viewsPath.dest))
+        .pipe(replace('API_URL', urlVariable))
         .pipe(gulp.dest(paths.viewsPath.dest))
         .pipe(browserSync.stream());
 };

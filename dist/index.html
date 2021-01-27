@@ -395,15 +395,7 @@
                     getApiKeys() {
                         console.log("GETTING API KEYS")
                         return new Promise(function (resolve) {
-                            var baseUrl
-                            var endpoint = "eleven/apiKeys.php"
-                            if (window.location.hostname == "localhost") {
-                                baseUrl = "http://localhost:8888/"
-                            } else {
-                                baseUrl = "%%BASE_URL%%"
-                            }
-
-                            url = baseUrl + "" + endpoint
+                            url = "http://localhost:8888/eleven/apiKeys.php"
                             axios
                                 .get(url, {})
                                 .then(response => {
