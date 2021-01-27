@@ -5,8 +5,8 @@
                         "RUN apk update && apk add nano npm",
                         "RUN npm install --global gulp-cli",
                         "WORKDIR /usr/share/nginx/html/",
-                        "ADD gulpfile.js /usr/share/nginx/html/", 
-                        "ADD package.json /usr/share/nginx/html/",
+                        "ADD . /usr/share/nginx/html/", 
+                        "RUN npm install",
                         "ARG BASE_URL=${BASE_URL}",
                         "RUN gulp prod --urlVariable $BASE_URL",
                         "COPY dist/ /usr/share/nginx/html/"
