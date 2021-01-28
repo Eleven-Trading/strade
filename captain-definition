@@ -12,7 +12,6 @@
                         "RUN gulp prod --FMP_API_KEY $FMP_API_KEY",
                         "RUN cp -R /usr/share/nginx/html/tmp/dist/* /usr/share/nginx/html/",
                         "WORKDIR /usr/share/nginx/html/",
-                        "RUN ls",
                         "RUN rm -r /usr/share/nginx/html/tmp"
                        ]
    }
