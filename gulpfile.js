@@ -67,14 +67,14 @@ function scriptsFunction() {
 };
 
 function viewsFunction() {
-    var urlVariable, i = process.argv.indexOf("--urlVariable");
+    var FMP_API_KEY, i = process.argv.indexOf("--FMP_API_KEY");
     if (i > -1) {
-        urlVariable = process.argv[i + 1];
-        console.log("Option is "+urlVariable)
+        FMP_API_KEY = process.argv[i + 1];
+        console.log("FMP_API_KEY is "+FMP_API_KEY)
     }
     return gulp.src(paths.viewsPath.src, { allowEmpty: true })
         //.pipe(changed(paths.viewsPath.dest))
-        .pipe(replace('API_URL', urlVariable))
+        .pipe(replace('FMP_API_KEY', FMP_API_KEY))
         .pipe(gulp.dest(paths.viewsPath.dest))
         .pipe(browserSync.stream());
 };

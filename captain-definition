@@ -7,8 +7,8 @@
                         "WORKDIR /usr/share/nginx/html/",
                         "ADD . .", 
                         "RUN npm install",
-                        "ARG BASE_URL=${BASE_URL}",
-                        "RUN gulp prod --urlVariable $BASE_URL",
+                        "ARG FMP_API_KEY=${FMP_API_KEY}",
+                        "RUN gulp prod --FMP_API_KEY $FMP_API_KEY",
                         "RUN ls",
                         "RUN cp -R /usr/share/nginx/html/dist/* /usr/share/nginx/html/",
                         "RUN rm -r /usr/share/nginx/html/dist /usr/share/nginx/html/src"

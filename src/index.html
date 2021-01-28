@@ -147,7 +147,7 @@
                                 ***********************/
                 data() {
                     return {
-                        FMP_API: null,
+                        FMP_API: "FMP_API_KEY",
                         sound: true,
                         voice: 49,
                         originalTimeout: null,
@@ -330,22 +330,17 @@
                     this.getFloatTickers()
 
                     /*
-                    *2. Get API keys
-                    */
-                    this.FMP_API = await this.getApiKeys()
-
-                    /*
-                    *3. Get list of tickers to observer
+                    *2. Get list of tickers to observer
                     */
                     this.tickerArray = await this.getTickerList(this.FMP_API)
 
                     /*
-                    *4. Compare ticker list to one minute and second values (making sure not to overlap each other => start at full minute and setTimeout for sec update, 8 seconds later)
+                    *3. Compare ticker list to one minute and second values (making sure not to overlap each other => start at full minute and setTimeout for sec update, 8 seconds later)
                     */
                     await this.startIntervals()
 
                     /*
-                    *5. Avoid annoying speechsynthesis error
+                    *4. Avoid annoying speechsynthesis error
                     */
                     const ut = new SpeechSynthesisUtterance('No warning should arise');
                     speechSynthesis.speak(ut);
@@ -389,30 +384,6 @@
                             .catch(function (error) {
                                 console.log(error);
                             });
-                    },
-
-                    //GET API KEYS
-                    getApiKeys() {
-                        console.log("GETTING API KEYS")
-                        return new Promise(function (resolve) {
-                            url = "API_URL"
-                            axios
-                                .get(url, {})
-                                .then(response => {
-                                    if (response.data == "Denied") {
-                                        alert("Access denied")
-                                        throw new Error("Access denied!");
-                                    } else {
-                                        console.log(" -> Success retrieving FMP API key")
-                                        resolve(response.data)
-                                    }
-                                })
-                                .catch(e => {
-
-                                    console.log("error " + e)
-                                })
-                            })
-
                     },
 
                     //GET TICKER LIST
