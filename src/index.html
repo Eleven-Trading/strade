@@ -4,9 +4,22 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
         <link rel="stylesheet" href="css/style.css"/>
         <script src="https://use.fontawesome.com/365512f0c3.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-tagsinput@0.7.1/dist/bootstrap-tagsinput.css">
     </head>
     <body>
         <div id="vapp">
+
+            <!-- SOUND -->
+            <div v-show="showAlert" class="alertBox" role="alert">
+                <div class="container-fluid">
+                    <span>
+                        <strong class="text-left">Error</strong>
+                        <button type="button" class="close float-right" v-on:click="showAlert = false">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <span style="display: block" v-for="message in alertMessage">{{message}}</span></span>
+                </div>
+            </div>
             <div class="container-fluid">
 
                 <!-- SOUND -->
@@ -58,19 +71,31 @@
                         <div class="col">
                             <label>Minimum increase(¢)</label>
                             <select v-on:input="minPriceDiff = $event.target.value" class="form-control">
-                                <option v-for="item in minPriceDiffArray" v-bind:value="item.value" :selected="item.value == 0.1">{{item.label}}</option>
+                                <option v-for="item in minPriceDiffArray" v-bind:value="item.value" :selected="item.value == minPriceDiff">{{item.label}}</option>
                             </select>
                         </div>
                         <div class="col">
                             <label>Minimum increase(%)</label>
                             <select v-on:input="minPricePc = $event.target.value" class="form-control">
-                                <option v-for="item in minPricePcArray" v-bind:value="item.value" :selected="item.value == 1">{{item.label}}</option>
+                                <option v-for="item in minPricePcArray" v-bind:value="item.value" :selected="item.value == minPricePc">{{item.label}}</option>
                             </select>
                         </div>
                     </div>
                 </div>
-
                 <hr>
+
+                <!-- EXCLUDE TICKERS -->
+                <div class="row">
+                    <div class="col-2">
+                        <label>Ticker(s) to exclude</label>
+                    </div>
+                    <div class="col">
+                        <input type="text" id="excludedArray" data-role="tagsinput" class="form-control">
+                    </div>
+                </div>
+                <hr>
+
+                <!-- MOMO TABLE -->
                 <div class="mt-3">
                     <h3 class="ml-2 mt-3 text-blue">MOMO</h3>
                     <table class="table text-center">
@@ -129,8 +154,7 @@
         <script src="https://cdn.jsdelivr.net/npm/vue-moment-lib@1.2.2/dist/vue-moment-lib.umd.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.20/lodash.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify@3.17.10/dist/tagify.min.js"></script>
-
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap-tagsinput@0.7.1/dist/bootstrap-tagsinput.min.js"></script>
         <!-- ********************************************************* 
                         *
                         VUEJS
@@ -139,17 +163,19 @@
         <script>
             const vueApp = new Vue({
 
-                components: {}, el: '#vapp',
-                /***********************
-                                *
-                                * DATA
-                                *
-                                ***********************/
+                components: {},
+                el: '#vapp',
+
                 data() {
                     return {
+                        showAlert: false,
+                        alertMessage: null,
                         FMP_API: "FMP_API_KEY",
+                        items: null,
                         sound: true,
                         voice: 49,
+                        excludedArray: [],
+                        /* Google US English(49), Google UK English Female (50), Google UK English Male (51), Thomas (0), Alex (1), Alice (2) */
                         originalTimeout: null,
                         firstSecInterval: null,
                         oneMinInterval: null,
@@ -159,24 +185,9 @@
                         gettingOneMinSnapshot: false,
                         gettingSecSnapshot: false,
                         secUpdate: 10,
-                        minVolume: 750000,
+                        minVolume: 1000000,
                         minVolumeArray: [
                             {
-                                value: 250000,
-                                label: "250k"
-                            }, {
-                                value: 300000,
-                                label: "300k"
-                            }, {
-                                value: 400000,
-                                label: "400k"
-                            }, {
-                                value: 500000,
-                                label: "500k"
-                            }, {
-                                value: 600000,
-                                label: "600k"
-                            }, {
                                 value: 750000,
                                 label: "750k"
                             }, {
@@ -188,6 +199,12 @@
                             }, {
                                 value: 1000000,
                                 label: "1M"
+                            }, {
+                                value: 1500000,
+                                label: "1.5M"
+                            }, {
+                                value: 2000000,
+                                label: "2M"
                             }
                         ],
                         maxVolume: 500000000,
@@ -258,8 +275,8 @@
                             }
                         ],
                         minPrice: 1,
-                        maxPrice: 12,
-                        minPriceDiff: 0.1,
+                        maxPrice: 10,
+                        minPriceDiff: 0.075,
                         minPriceDiffArray: [
                             {
                                 value: 0.05,
@@ -278,9 +295,12 @@
                                 label: "15¢"
                             }
                         ],
-                        minPricePc: 1,
+                        minPricePc: 0.75,
                         minPricePcArray: [
                             {
+                                value: 0.25,
+                                label: "0.25%"
+                            }, {
                                 value: 0.5,
                                 label: "0.5%"
                             }, {
@@ -316,7 +336,7 @@
                                 * CREATED
                                 *
                                 ***********************/
-                beforeCreated() {},
+                afterCreated() {},
 
                 /***********************
                                 *
@@ -325,44 +345,79 @@
                                 ***********************/
                 mounted: async function () {
                     /*
-                    *1. Getting JSON with symbols and share float
+                    *1. Avoid annoying speechsynthesis error and alert that speech is activated. Remember that user needs to interact with the screen. A better option is to make an alert to make sure user interacts with page on load.
+                    */
+                    speechFunction = () => {
+                        //alert("Speech will be activated")
+                        var msg = new SpeechSynthesisUtterance();
+                        var voices = speechSynthesis.getVoices();
+                        msg.voice = voices[this.voice];
+                        msg.rate = 0.9; // From 0.1 to 10
+                        msg.lang = 'en';
+                        msg.text = "Speech is activated";
+                        window
+                            .speechSynthesis
+                            .speak(msg);
+                    }
+                    await speechFunction()
+
+                    /*
+                    *2. Getting JSON with symbols and share float
                     */
                     this.getFloatTickers()
 
                     /*
-                    *2. Get list of tickers to observer
+                    *3. Get list of tickers to observer
                     */
-                    this.tickerArray = await this.getTickerList(this.FMP_API)
+                    const a = await this.getTickerList(this.FMP_API)
+                    this.tickerArray = a.tickerArray
+                    if (Array.isArray(a.error) && a.error.length) {
+                        this.alertMessage = a.error
+                        this.showAlert = true
+                    }
 
                     /*
-                    *3. Compare ticker list to one minute and second values (making sure not to overlap each other => start at full minute and setTimeout for sec update, 8 seconds later)
+                    *4. Compare ticker list to one minute and second values (making sure not to overlap each other => start at full minute and setTimeout for sec update, 8 seconds later)
                     */
                     await this.startIntervals()
 
                     /*
-                    *4. Avoid annoying speechsynthesis error
+                    *5. Other
                     */
-                    const ut = new SpeechSynthesisUtterance('No warning should arise');
-                    speechSynthesis.speak(ut);
+
+                    // Input for stop watching stocks
+                    //https://bootstrap-tagsinput.github.io/bootstrap-tagsinput/examples/
+                    $('#excludedArray').on('beforeItemAdd', (event) => {
+                        if (event.item !== event.item.toUpperCase()) {
+                            event.cancel = true;
+                            $('#excludedArray').tagsinput('add', event.item.toUpperCase());
+                        }
+                    });
+
+                    $('#excludedArray').on('itemAdded', (event) => {
+                        console.log("Item to add " + event.item)
+                        this
+                            .excludedArray
+                            .push(event.item)
+                        console.log("Items in stop watch " + this.excludedArray)
+                    });
+                    $('input').on('itemRemoved', (event) => {
+                        console.log("Item to remove " + event.item)
+                        this.excludedArray = this
+                            .excludedArray
+                            .filter(item => item !== event.item)
+                        console.log("Items in stop watch " + this.excludedArray)
+                    });
 
                 },
 
-                /***********************
-                                *
-                                * WATCH
-                                *
-                                ***********************/
                 watch: {},
 
-                /***********************
-                                *
-                                * METHODS
-                                *
-                                ***********************/
                 methods: {
 
-                    //GET JSON WITH SYMBOLS AND SHARE FLOAT
+                    /** GET JSON WITH SYMBOLS AND SHARE FLOAT **/
                     getFloatTickers() {
+                        var error = []
                         console.log("GETTING JSON WITH SYMBOLS AND SHARE FLOAT ")
                         floatTickersUrl = "https://7ak-public.s3.amazonaws.com/floatTickers.json"
                         //var floatTickers = await (await fetch(floatTickersUrl)).json();
@@ -373,16 +428,10 @@
                                 this.shareFloatArray = response.data
                                 //console.log("array from remote " + JSON.stringify(this.shareFloatArray))
                             })
-                            .then(() => {
-                                /*console
-                                    .log("THEN array from remote " + JSON.stringify(this.shareFloatArray))
-                                var ticker = this
-                                    .shareFloatArray
-                                    .find(el => el.symbol === "STTK");
-                                console.log("ticker float from JSON is symbol " + ticker["symbol"] + " and float " + ticker["shsFloat"]);*/
-                            })
-                            .catch(function (error) {
-                                console.log(error);
+                            .catch((e) => {
+                                error.push("Getting float and tickers error " + e)
+                                this.alertMessage = error
+                                this.showAlert = true
                             });
                     },
 
@@ -390,6 +439,7 @@
                     getTickerList(param) {
                         console.log("GETTING TICKER LIST ")
                         return new Promise(function (resolve) {
+                            var error = []
                             url = "https://financialmodelingprep.com/api/v3/stock-screener"
                             axios
                                 .get(url, {
@@ -401,6 +451,14 @@
                                     }
                                 })
                                 .then(response => {
+                                    if (typeof response.data[0] === 'undefined' || response.data[0] === null) {
+                                        console.log(" -> Ticker array is null")
+                                        error.push("Ticker array is null")
+                                    }
+                                    if (typeof response.data["Error Message"] != 'undefined' || response.data["Error Message"] != null) {
+                                        console.log(" -> Error retrieving with FMP " + JSON.stringify(response.data["Error Message"]))
+                                        error.push(response.data["Error Message"])
+                                    }
                                     var tickerArray = []
                                     //console.log(" -> full ticker list " + JSON.stringify(response.data))
                                     for (key in response.data) {
@@ -408,12 +466,13 @@
                                         tickerArray.push(response.data[key].symbol)
                                     }
                                     //console.log(" -> Ticker list : " + tickerArray)
-                                    resolve(tickerArray)
+                                    resolve({tickerArray, error})
 
                                 })
                                 .catch(e => {
-
+                                    error.push("axios error: " + e.message)
                                     console.log("error " + e)
+                                    resolve({error})
                                 })
                             })
                     },
@@ -486,6 +545,7 @@
 
                     //GET SNAPSHOTS (1 MINUTE AND SECONDS)
                     getSnapshot(param) {
+                        var error = []
                         var date = new Date();
                         console.log(param.toUpperCase() + " SNAPSHOT at " + date.getSeconds())
                         if (param == "fiveMin") {
@@ -536,9 +596,10 @@
 
                                         var filterData = response
                                             .data
-                                            .filter(function (fil) {
+                                            .filter((fil) => {
                                                 return fil.price >= minPx && fil.price <= maxPx && fil.volume >= minVol && fil.volume < maxVol && fil.marketCap < 2000000000
                                             });
+
                                         if (param == "fiveMin") {
                                             this.fiveMinSnapshot = [
                                                 ...this.fiveMinSnapshot,
@@ -562,7 +623,11 @@
                                         response
                                             .data
                                             .forEach(updateItem => {
+
+                                                /* Check if One min snapshot exists and that symbol exists in both one min and sec snapshot */
                                                 if (!!this.oneMinSnapshot && this.oneMinSnapshot.find(oneMinItem => oneMinItem.symbol === updateItem.symbol) != undefined) {
+
+                                                    /* Find the whole object of the symbol that matches */
                                                     var oneMinObject = this
                                                         .oneMinSnapshot
                                                         .find(oneMinItem => oneMinItem.symbol === updateItem.symbol)
@@ -571,14 +636,22 @@
                                                     var pricePc = ((updateItem.price - oneMinObject.price) / oneMinObject.price) * 100
                                                     var volumePc = ((updateItem.volume - oneMinObject.volume) / oneMinObject.volume) * 100
                                                     //console.log("volume pc "+volumePc)
-                                                    if (priceDiff >= this.minPriceDiff && pricePc >= this.minPricePc && volumePc > 0) {
+
+                                                    /* Check if symobol is in exclude array */
+                                                    var tickerExcluded = this
+                                                        .excludedArray
+                                                        .includes(updateItem.symbol)
+                                                    if (tickerExcluded == true){
+                                                        console.log(" -> Ticker "+updateItem.symbol+" is excluded from MOMO table")
+                                                    }
+
+                                                    /* If requirements are met and symbol/ticker is not marked as excluded, include in MOMO table */
+                                                    if (priceDiff >= this.minPriceDiff && pricePc >= this.minPricePc && volumePc > 0 && tickerExcluded == false) {
                                                         console.log(" -> MOMO data")
                                                         if (this.sound) {
-                                                            //console.log ("sound is ON so text to speech")
-                                                            /* Google US English(49), Google UK English Female (50), Google UK English Male (51), Thomas (0), Alex (1), Alice (2) */
                                                             var msg = new SpeechSynthesisUtterance();
                                                             var voices = speechSynthesis.getVoices();
-                                                            msg.voice = voices[49];
+                                                            msg.voice = voices[this.voice];
                                                             msg.rate = 0.9; // From 0.1 to 10
                                                             msg.lang = 'en';
                                                             msg.text = updateItem.symbol;
@@ -588,10 +661,8 @@
                                                         }
 
                                                         var tempSec = {}
-                                                        //console.log("ONE MIN COMPARISON\nPrice increase of 10 cents or more for symbol " + updateItem.symbol + ". Old price " + oneMinObject.price + " and new price " + updateItem.price + " so increase of " + (updateItem.price - oneMinObject.price))
-                                                        //console.log(" -> Stock " + updateItem.symbol + " has Float " + response.data)
 
-                                                        //Let's search for float in json
+                                                        /* Let's search for float in json */
                                                         var shareFloatSearch = this
                                                             .shareFloatArray
                                                             .find(el => el.symbol === updateItem.symbol)
@@ -637,7 +708,9 @@
 
                                 })
                                 .catch(e => {
-
+                                    error.push(param + " snapshot " + e)
+                                    this.alertMessage = error
+                                    this.showAlert = true
                                     console.log(" -> " + param.toUpperCase() + " shapshot error " + e)
                                 })
 

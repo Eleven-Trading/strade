@@ -31,3 +31,26 @@
     background-color: #ff3333; 
     color: white;
 }
+
+.alertBox{
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    -webkit-animation: fadeinout 4s linear forwards;
+    animation: fadeinout 4s linear forwards;
+}
+
+.bootstrap-tagsinput{
+    display: inherit !important;
+}
+
+.bootstrap-tagsinput input{
+    width: 60px !important;
+    text-transform: uppercase;
+}
+
+.bootstrap-tagsinput .tag {
+    color: #333 !important;
+    background-color: #e9ecef;
+
+}
