@@ -18,7 +18,6 @@ Include logo/demo screenshot etc.
 ## Built with
 - Bootstrap 4 
 - VueJS
-- PHP
 
 ## Getting Started
 
@@ -33,8 +32,8 @@ Include logo/demo screenshot etc.
 - Run "gulp" in terminal and launch localhost:3000 in your browser
 
 ### Deployment
+- Deploy on your localhost or server as a static website (using Nginx for example)
 - This project includes a deployment file for deploying on PaaS Caprover
-- More generally speaking, a php server to run the project
 
 ### How to use?
 - Launch website and set parameters for your stock scanner. 
