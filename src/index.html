@@ -218,6 +218,7 @@
                         gettingOneMinSnapshot: false,
                         gettingSecSnapshot: false,
                         secUpdate: 10,
+                        newSecIntervalTimeout: 7000,
                         minVolume: 1000000,
                         minVolumeArray: [
                             {
@@ -590,13 +591,13 @@
                                     } else {
                                         console.log("OneMin Snapshot is running. Setting new interval")
                                         clearInterval(this.secInterval)
-                                        this.newSecInterval = setTimeout(secFunction, 8000); // try again in 300 milliseconds
+                                        this.newSecInterval = setTimeout(secFunction, this.newSecIntervalTimeout); // try again
                                     }
                                     //console.log("it's a new " + this.secUpdate + "second update")
 
                                 }, this.secUpdate * 1000);
                             }
-                            this.firstSecInterval = setTimeout(secFunction, 8000)
+                            this.firstSecInterval = setTimeout(secFunction, this.newSecIntervalTimeout)
 
                         }, (60 - date.getSeconds()) * 1000);
 
