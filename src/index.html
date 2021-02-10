@@ -1,7 +1,7 @@
 <html>
     <head>
         <link rel="icon" type="image/png" href="images/bull.png"/>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
         <link rel="stylesheet" href="css/style.css"/>
         <script src="https://use.fontawesome.com/365512f0c3.js"></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-tagsinput@0.7.1/dist/bootstrap-tagsinput.css">
@@ -23,70 +23,89 @@
             <div class="container-fluid">
 
                 <!-- SOUND -->
-                <div>
-                <h5 class="ml-2 mt-3 text-blue">SETTINGS</h5>
-                <div class="mt-3 form-inline">
-                    <button class="btn btn-info audioButton" v-on:click="sound = !sound">
-                        <span v-if="sound == true">
-                            <i class="fa fa-volume-up"></i>
+                <div class="mt-2">
+                    <h5 class="ml-2 mt-3 d-inline">SETTINGS</h5>
+                    <a class="d-inline" v-on:click="showSettings = !showSettings">
+                        <span v-if="showSettings">
+                            <i class="fa fa-caret-down"></i>
                         </span>
                         <span v-else>
-                            <i class="fa fa-volume-off"></i></span></button>
+                            <i class="fa fa-caret-up"></i>
+                        </span>
+                    </a>
 
-                    <div class="input-group ml-3">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">
-                                <i class="fa fa-retweet"></i>
-                            </span>
+                    <div v-show="showSettings" class="mt-1 row g-3 align-items-center">
+                        <div class="col-auto">
+                            <button class="btn btn-info audioButton" v-on:click="sound = !sound">
+                                <span v-if="sound == true">
+                                    <i class="fa fa-volume-up"></i>
+                                </span>
+                                <span v-else>
+                                    <i class="fa fa-volume-off"></i></span></button>
                         </div>
 
-                        <select v-on:input="secUpdate = $event.target.value; if ($event.target.value == 0){stopIntervals()}else{startIntervals()}" class="form-control">
-                            <option value="0" selected>STOP</option>
-                            <option value="10" selected>10s</option>
-                            <option value="5">5s</option>
-                            <option value="15">15s</option>
-                            <option value="20">20s</option>
-                        </select>
+                        <div class="col-auto">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fa fa-retweet"></i>
+                                </span>
+
+                                <select v-on:input="secUpdate = $event.target.value; if ($event.target.value == 0){stopIntervals()}else{startIntervals()}" class="form-select">
+                                    <option value="0" selected>STOP</option>
+                                    <option value="10" selected>10s</option>
+                                    <option value="5">5s</option>
+                                    <option value="15">15s</option>
+                                    <option value="20">20s</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                </div>
                 </div>
                 <hr>
                 <div class="mt-3 mb-3">
-                <h5 class="ml-2 mt-3 text-blue">FILTER</h5>
-                    <div class="row">
+                    <h5 class="ml-2 mt-3 d-inline">FILTER</h5>
+                    <a class="d-inline" v-on:click="showFilter = !showFilter">
+                        <span v-if="showFilter">
+                            <i class="fa fa-caret-down"></i>
+                        </span>
+                        <span v-else>
+                            <i class="fa fa-caret-up"></i>
+                        </span>
+                    </a>
+                    <div v-show="showFilter" class="row">
                         <div class="col">
                             <label>Minimum Volume</label>
-                            <select v-on:input="minVolume = $event.target.value" class="form-control">
+                            <select v-on:input="minVolume = $event.target.value" class="form-select">
                                 <option v-for="item in minVolumeArray" v-bind:value="item.value" :selected="item.value == minVolume">{{item.label}}</option>
                             </select>
                         </div>
                         <div class="col">
                             <label>Minimum price</label>
-                            <select v-on:input="minPrice = $event.target.value" class="form-control">
+                            <select v-on:input="minPrice = $event.target.value" class="form-select">
                                 <option v-for="item in priceArray" v-bind:value="item.value" :selected="item.value ==  minPrice">{{item.label}}</option>
                             </select>
                         </div>
                         <div class="col">
                             <label>Maximum price</label>
-                            <select v-on:input="maxPrice = $event.target.value" class="form-control">
+                            <select v-on:input="maxPrice = $event.target.value" class="form-select">
                                 <option v-for="item in priceArray" v-bind:value="item.value" :selected="item.value == maxPrice">{{item.label}}</option>
                             </select>
                         </div>
                         <div class="col">
                             <label>Min Price Chge(¢)</label>
-                            <select v-on:input="minPriceDiff = $event.target.value" class="form-control">
+                            <select v-on:input="minPriceDiff = $event.target.value" class="form-select">
                                 <option v-for="item in minPriceDiffArray" v-bind:value="item.value" :selected="item.value == minPriceDiff">{{item.label}}</option>
                             </select>
                         </div>
                         <div class="col">
                             <label>Min Price Chge(%)</label>
-                            <select v-on:input="minPricePc = $event.target.value" class="form-control">
+                            <select v-on:input="minPricePc = $event.target.value" class="form-select">
                                 <option v-for="item in minPricePcArray" v-bind:value="item.value" :selected="item.value == minPricePc">{{item.label}}</option>
                             </select>
                         </div>
                         <div class="col">
                             <label>Min Volume Chge(%)</label>
-                            <select v-on:input="minVolPc = $event.target.value" class="form-control">
+                            <select v-on:input="minVolPc = $event.target.value" class="form-select">
                                 <option v-for="item in minVolPcArray" v-bind:value="item.value" :selected="item.value == minVolPc">{{item.label}}</option>
                             </select>
                         </div>
@@ -100,7 +119,7 @@
                         <label>Ticker(s) to exclude</label>
                     </div>
                     <div class="col">
-                        <input type="text" id="excludedArray" data-role="tagsinput" class="form-control">
+                        <input type="text" id="excludedArray" data-role="tagsinput" class="form-select">
                     </div>
                 </div>
                 <hr>
@@ -132,7 +151,7 @@
                                 <td>{{snapshot.updatePrice}}</td>
                                 <td>
                                     <span v-if="snapshot.volume<1000000">{{Math.ceil(snapshot.volume/1000)}}k</span><span v-else>{{parseFloat(snapshot.volume/1000000).toFixed(1)}}M</span></td>
-                                
+
                                 <td v-bind:class="{'green1': (snapshot.float>=20000000 && snapshot.float<30000000) || (snapshot.float>=100000000 && snapshot.float<120000000), 'green2': (snapshot.float>=30000000 && snapshot.float<40000000) || (snapshot.float>=90000000 && snapshot.float<100000000), 'green3': (snapshot.float>=40000000 && snapshot.float<60000000) || (snapshot.float>=80000000 && snapshot.float<90000000), 'green4': snapshot.float>=60000000 && snapshot.float<80000000, 'red': snapshot.float<20000000}">
                                     <span v-if="snapshot.float<1000000">{{Math.ceil(snapshot.float/1000)}}k</span><span v-else>{{parseFloat(snapshot.float/1000000).toFixed(1)}}M</span></td>
 
@@ -155,8 +174,8 @@
                         SCRIPTS
                         *
                         ********************************************************* -->
-        <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.min.js" integrity="sha256-T/f7Sju1ZfNNfBh7skWn0idlCBcI3RwdLSS4/I7NQKQ=" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script>
@@ -165,7 +184,7 @@
         <script src="https://cdn.jsdelivr.net/npm/vue-moment-lib@1.2.2/dist/vue-moment-lib.umd.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.20/lodash.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap-tagsinput@0.7.1/dist/bootstrap-tagsinput.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap-tagsinput@latest/dist/bootstrap-tagsinput.min.js"></script>
         <!-- ********************************************************* 
                         *
                         VUEJS
@@ -180,6 +199,9 @@
                 data() {
                     return {
                         showAlert: false,
+                        showSettings: false,
+                        showFilter: true,
+                        showExclTickers: true,
                         alertMessage: null,
                         FMP_API: "FMP_API_KEY",
                         items: null,
@@ -292,8 +314,7 @@
                             {
                                 value: 0.025,
                                 label: "2.5¢"
-                            },
-                            {
+                            }, {
                                 value: 0.05,
                                 label: "5¢"
                             }, {
@@ -684,8 +705,7 @@
                                                     var priceDiff = updateItem.price - oneMinObject.price
                                                     var pricePc = ((updateItem.price - oneMinObject.price) / oneMinObject.price) * 100
                                                     var volumePc = ((updateItem.volume - oneMinObject.volume) / oneMinObject.volume) * 100
-                                                    console.log("-> priceDiff "+priceDiff+", volume pc "+volumePc+ "and min vol pc "+this.minVolPc)
-                                                    
+                                                    //console.log("-> priceDiff "+priceDiff+", volume pc "+volumePc+ "and min vol pc "+this.minVolPc)
 
                                                     /* Check if symobol is in exclude array */
                                                     var tickerExcluded = this
@@ -695,7 +715,7 @@
                                                     /* If requirements are met and symbol/ticker is not marked as excluded, include in MOMO table */
                                                     if (priceDiff >= this.minPriceDiff && pricePc >= this.minPricePc && volumePc >= this.minVolPc && tickerExcluded == false) {
                                                         console.log(" -> MOMO data")
-                                                        console.log("-> priceDiff "+priceDiff+", volume pc "+volumePc+ "and min vol pc "+this.minVolPc)
+                                                        //console.log("-> priceDiff "+priceDiff+", volume pc "+volumePc+ "and min vol pc "+this.minVolPc)
                                                         if (this.sound) {
                                                             var msg = new SpeechSynthesisUtterance();
                                                             var voices = speechSynthesis.getVoices();
