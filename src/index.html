@@ -23,6 +23,8 @@
             <div class="container-fluid">
 
                 <!-- SOUND -->
+                <div>
+                <h5 class="ml-2 mt-3 text-blue">SETTINGS</h5>
                 <div class="mt-3 form-inline">
                     <button class="btn btn-info audioButton" v-on:click="sound = !sound">
                         <span v-if="sound == true">
@@ -47,8 +49,10 @@
                         </select>
                     </div>
                 </div>
+                </div>
                 <hr>
                 <div class="mt-3 mb-3">
+                <h5 class="ml-2 mt-3 text-blue">FILTER</h5>
                     <div class="row">
                         <div class="col">
                             <label>Minimum Volume</label>
@@ -69,15 +73,21 @@
                             </select>
                         </div>
                         <div class="col">
-                            <label>Minimum increase(¢)</label>
+                            <label>Min Price Chge(¢)</label>
                             <select v-on:input="minPriceDiff = $event.target.value" class="form-control">
                                 <option v-for="item in minPriceDiffArray" v-bind:value="item.value" :selected="item.value == minPriceDiff">{{item.label}}</option>
                             </select>
                         </div>
                         <div class="col">
-                            <label>Minimum increase(%)</label>
+                            <label>Min Price Chge(%)</label>
                             <select v-on:input="minPricePc = $event.target.value" class="form-control">
                                 <option v-for="item in minPricePcArray" v-bind:value="item.value" :selected="item.value == minPricePc">{{item.label}}</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label>Min Volume Chge(%)</label>
+                            <select v-on:input="minVolPc = $event.target.value" class="form-control">
+                                <option v-for="item in minVolPcArray" v-bind:value="item.value" :selected="item.value == minVolPc">{{item.label}}</option>
                             </select>
                         </div>
                     </div>
@@ -280,6 +290,10 @@
                         minPriceDiff: 0.075,
                         minPriceDiffArray: [
                             {
+                                value: 0.025,
+                                label: "2.5¢"
+                            },
+                            {
                                 value: 0.05,
                                 label: "5¢"
                             }, {
@@ -303,7 +317,7 @@
                                 label: "0.25%"
                             }, {
                                 value: 0.5,
-                                label: "0.5%"
+                                label: "0.50%"
                             }, {
                                 value: 0.75,
                                 label: "0.75%"
@@ -322,6 +336,40 @@
                             }, {
                                 value: 2,
                                 label: "2%"
+                            }
+                        ],
+                        minVolPc: 0.05,
+                        minVolPcArray: [
+                            {
+                                value: 0,
+                                label: "0%"
+                            }, {
+                                value: 0.05,
+                                label: "0.05%"
+                            }, {
+                                value: 0.1,
+                                label: "0.10%"
+                            }, {
+                                value: 0.25,
+                                label: "0.25%"
+                            }, {
+                                value: 0.5,
+                                label: "0.50%"
+                            }, {
+                                value: 0.75,
+                                label: "0.75%"
+                            }, {
+                                value: 1,
+                                label: "1%"
+                            }, {
+                                value: 5,
+                                label: "5%"
+                            }, {
+                                value: 10,
+                                label: "10%"
+                            }, {
+                                value: 20,
+                                label: "20%"
                             }
                         ],
                         tickerArray: null,
@@ -636,7 +684,8 @@
                                                     var priceDiff = updateItem.price - oneMinObject.price
                                                     var pricePc = ((updateItem.price - oneMinObject.price) / oneMinObject.price) * 100
                                                     var volumePc = ((updateItem.volume - oneMinObject.volume) / oneMinObject.volume) * 100
-                                                    //console.log("volume pc "+volumePc)
+                                                    console.log("-> priceDiff "+priceDiff+", volume pc "+volumePc+ "and min vol pc "+this.minVolPc)
+                                                    
 
                                                     /* Check if symobol is in exclude array */
                                                     var tickerExcluded = this
@@ -644,8 +693,9 @@
                                                         .includes(updateItem.symbol)
 
                                                     /* If requirements are met and symbol/ticker is not marked as excluded, include in MOMO table */
-                                                    if (priceDiff >= this.minPriceDiff && pricePc >= this.minPricePc && volumePc > 0 && tickerExcluded == false) {
+                                                    if (priceDiff >= this.minPriceDiff && pricePc >= this.minPricePc && volumePc >= this.minVolPc && tickerExcluded == false) {
                                                         console.log(" -> MOMO data")
+                                                        console.log("-> priceDiff "+priceDiff+", volume pc "+volumePc+ "and min vol pc "+this.minVolPc)
                                                         if (this.sound) {
                                                             var msg = new SpeechSynthesisUtterance();
                                                             var voices = speechSynthesis.getVoices();
