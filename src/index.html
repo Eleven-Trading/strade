@@ -113,13 +113,15 @@
                 </div>
                 <hr>
 
-                <!-- EXCLUDE TICKERS -->
+                <!-- UNFOLLOW / FOLLOW TICKERS -->
                 <div class="row">
-                    <div class="col-2">
-                        <label>Ticker(s) to exclude</label>
+                    <div class="col-6">
+                        <label>Ticker(s) to unfolow</label>
+                        <input type="text" id="unfollowArray" data-role="tagsinput" class="form-select">
                     </div>
-                    <div class="col">
-                        <input type="text" id="excludedArray" data-role="tagsinput" class="form-select">
+                    <div class="col-6">
+                        <label>Ticker(s) to follow</label>
+                        <input type="text" id="followArray" data-role="tagsinput" class="form-select">
                     </div>
                 </div>
                 <hr>
@@ -146,7 +148,11 @@
                         <tbody>
                             <tr v-for="snapshot in secSnapshot.slice(0,20)" v-bind:class="[$moment().diff($moment.unix(snapshot.time), 'seconds')>=secUpdate? 'oldData' : '']">
                                 <td>{{$moment.unix(snapshot.time).tz("America/New_York").format("hh:mm:ss")}}</td>
-                                <td>{{snapshot.symbol}}</td>
+                                <td>{{snapshot.symbol}}
+                                    <span v-show="followArray.includes(snapshot.symbol)" class="ps-1" style="font-size: 1em; color: green;">
+                                        <i class="fa fa-star"></i>
+                                    </span>
+                                </td>
                                 <td>{{snapshot.strategy}}</td>
                                 <td>{{snapshot.updatePrice}}</td>
                                 <td>
@@ -207,7 +213,8 @@
                         items: null,
                         sound: true,
                         voice: 49,
-                        excludedArray: [],
+                        unfollowArray: [],
+                        followArray: [],
                         /* Google US English(49), Google UK English Female (50), Google UK English Male (51), Thomas (0), Alex (1), Alice (2) */
                         originalTimeout: null,
                         firstSecInterval: null,
@@ -456,28 +463,52 @@
                     *5. Other
                     */
 
-                    // Input for stop watching stocks
+                    // Input for unfollow tickers
                     //https://bootstrap-tagsinput.github.io/bootstrap-tagsinput/examples/
-                    $('#excludedArray').on('beforeItemAdd', (event) => {
+                    $('#unfollowArray').on('beforeItemAdd', (event) => {
                         if (event.item !== event.item.toUpperCase()) {
                             event.cancel = true;
-                            $('#excludedArray').tagsinput('add', event.item.toUpperCase());
+                            $('#unfollowArray').tagsinput('add', event.item.toUpperCase());
                         }
                     });
 
-                    $('#excludedArray').on('itemAdded', (event) => {
+                    $('#unfollowArray').on('itemAdded', (event) => {
                         console.log("Item to add " + event.item)
                         this
-                            .excludedArray
+                            .unfollowArray
                             .push(event.item)
-                        console.log("Items in stop watch " + this.excludedArray)
+                        console.log("Items to unfollow " + this.unfollowArray)
                     });
-                    $('input').on('itemRemoved', (event) => {
-                        console.log("Item to remove " + event.item)
-                        this.excludedArray = this
-                            .excludedArray
+                    $('#unfollowArray').on('itemRemoved', (event) => {
+                        console.log("Item to remove from unfollow " + event.item)
+                        this.unfollowArray = this
+                            .unfollowArray
                             .filter(item => item !== event.item)
-                        console.log("Items in stop watch " + this.excludedArray)
+                        console.log("Items to unfollow " + this.unfollowArray)
+                    });
+
+                    // Input for unfollow tickers
+                    //https://bootstrap-tagsinput.github.io/bootstrap-tagsinput/examples/
+                    $('#followArray').on('beforeItemAdd', (event) => {
+                        if (event.item !== event.item.toUpperCase()) {
+                            event.cancel = true;
+                            $('#followArray').tagsinput('add', event.item.toUpperCase());
+                        }
+                    });
+
+                    $('#followArray').on('itemAdded', (event) => {
+                        console.log("Item to add " + event.item)
+                        this
+                            .followArray
+                            .push(event.item)
+                        console.log("Items in following Array " + this.followArray)
+                    });
+                    $('#followArray').on('itemRemoved', (event) => {
+                        console.log("Item to remove from follow " + event.item)
+                        this.followArray = this
+                            .followArray
+                            .filter(item => item !== event.item)
+                        console.log("Items in following Array " + this.followArray)
                     });
 
                 },
@@ -708,13 +739,13 @@
                                                     var volumePc = ((updateItem.volume - oneMinObject.volume) / oneMinObject.volume) * 100
                                                     //console.log("-> priceDiff "+priceDiff+", volume pc "+volumePc+ "and min vol pc "+this.minVolPc)
 
-                                                    /* Check if symobol is in exclude array */
-                                                    var tickerExcluded = this
-                                                        .excludedArray
+                                                    /* Check if symobol is in unfollow array */
+                                                    var tickerUnfollow = this
+                                                        .unfollowArray
                                                         .includes(updateItem.symbol)
 
                                                     /* If requirements are met and symbol/ticker is not marked as excluded, include in MOMO table */
-                                                    if (priceDiff >= this.minPriceDiff && pricePc >= this.minPricePc && volumePc >= this.minVolPc && tickerExcluded == false) {
+                                                    if (priceDiff >= this.minPriceDiff && pricePc >= this.minPricePc && volumePc >= this.minVolPc && tickerUnfollow == false) {
                                                         console.log(" -> MOMO data")
                                                         //console.log("-> priceDiff "+priceDiff+", volume pc "+volumePc+ "and min vol pc "+this.minVolPc)
                                                         if (this.sound) {
