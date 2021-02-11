@@ -1,6 +1,6 @@
 .oldData, .oldData .green1, .oldData .green2, .oldData .green3, .oldData .green4, .oldData .red {
     color: rgb(160, 158, 158);
-    background-color: transparent;
+    background-color: transparent !important; 
 }
 
 .audioButton{
@@ -9,32 +9,32 @@
 }
 
 .green1{
-    background-color: #32de84; 
+    background-color: #32de84 !important; 
     color: white;
 }
 
 .green2{
-    background-color: #00AB66; 
+    background-color: #00AB66 !important; 
     color: white;
 }
 
 .green3{
-    background-color: #006241; 
+    background-color: #006241 !important; 
     color: white;
 }
 
 .green4{
-    background-color: #004526; 
+    background-color: #004526 !important; 
     color: white;
 }
 .red{
-    background-color: #ff3333; 
+    background-color: #ff3333 !important; 
     color: white;
 }
 
 .alertBox{
     color: #721c24;
-    background-color: #f8d7da;
+    background-color: #f8d7da !important; 
     border-color: #f5c6cb;
     -webkit-animation: fadeinout 4s linear forwards;
     animation: fadeinout 4s linear forwards;
