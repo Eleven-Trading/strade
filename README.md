@@ -10,8 +10,7 @@ Trade Ideas is a great and very powerful stock scanner. However, I thought it wa
 - Customize the scan to your preferences
 
 ## Screenshots
-
-Include logo/demo screenshot etc.
+<img src="https://7ak-public.s3.amazonaws.com/strade_scanner_sreenshot.png" height="100">
 
 # Tech/framework used
 
