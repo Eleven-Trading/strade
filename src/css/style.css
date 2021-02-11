@@ -1,4 +1,7 @@
-.oldData, .oldData .green1, .oldData .green2, .oldData .green3, .oldData .green4, .oldData .red {
+.blueIcon{
+    color: #0dcaf0;
+}
+.oldData, .oldData .green1, .oldData .green2, .oldData .green3, .oldData .green4, .oldData .red, .oldData .starGreen, .oldData .eyeBlack {
     color: rgb(160, 158, 158);
     background-color: transparent !important; 
 }
@@ -32,10 +35,31 @@
     color: white;
 }
 
+.starGreen {
+    font-size: 1em;
+    color: green;
+    cursor: pointer
+}
+.eyeBlack{
+    font-size: 1em;
+    color: #333;
+    cursor: pointer
+}
+
 .alertBox{
+    padding: 1em 0;
     color: #721c24;
     background-color: #f8d7da !important; 
     border-color: #f5c6cb;
+    -webkit-animation: fadeinout 4s linear forwards;
+    animation: fadeinout 4s linear forwards;
+}
+
+.infoBox{
+    padding: 1em 0;
+    color: #41464b;
+    background-color: #e2e3e5 !important; 
+    border-color: #d3d6d8;
     -webkit-animation: fadeinout 4s linear forwards;
     animation: fadeinout 4s linear forwards;
 }

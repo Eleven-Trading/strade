@@ -9,14 +9,22 @@
     <body>
         <div id="vapp">
 
-            <!-- SOUND -->
+        <!-- INFO
+            <div v-show="showInfo" class="infoBox" role="alert">
+                <div class="container-fluid">
+                    <span>
+                        <strong class="text-left">INFO</strong>
+                        <button type="button" class="btn-close float-end" v-on:click="showInfo = false"></button>
+                        <span style="display: block" v-for="message in infoMessage">{{message}}</span></span>
+                </div>
+            </div> -->
+
+            <!-- ALERT -->
             <div v-show="showAlert" class="alertBox" role="alert">
                 <div class="container-fluid">
                     <span>
-                        <strong class="text-left">Error</strong>
-                        <button type="button" class="close float-right" v-on:click="showAlert = false">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+                        <strong class="text-left">ERROR</strong>
+                        <button type="button" class="btn-close float-end" v-on:click="showAlert = false"></button>
                         <span style="display: block" v-for="message in alertMessage">{{message}}</span></span>
                 </div>
             </div>
@@ -27,10 +35,10 @@
                     <h5 class="ml-2 mt-3 d-inline">SETTINGS</h5>
                     <a class="d-inline" v-on:click="showSettings = !showSettings">
                         <span v-if="showSettings">
-                            <i class="fa fa-caret-down"></i>
+                            <i class="blueIcon fa fa-caret-down"></i>
                         </span>
                         <span v-else>
-                            <i class="fa fa-caret-up"></i>
+                            <i class="blueIcon fa fa-caret-up"></i>
                         </span>
                     </a>
 
@@ -66,10 +74,10 @@
                     <h5 class="ml-2 mt-3 d-inline">FILTER</h5>
                     <a class="d-inline" v-on:click="showFilter = !showFilter">
                         <span v-if="showFilter">
-                            <i class="fa fa-caret-down"></i>
+                            <i class="blueIcon fa fa-caret-down"></i>
                         </span>
                         <span v-else>
-                            <i class="fa fa-caret-up"></i>
+                            <i class="blueIcon fa fa-caret-up"></i>
                         </span>
                     </a>
                     <div v-show="showFilter" class="row">
@@ -117,10 +125,16 @@
                 <div class="row">
                     <div class="col-6">
                         <label>Ticker(s) to unfollow</label>
+                        <span class="eyeBlack">
+                            <i class="fa fa-eye-slash"></i>
+                        </span>
                         <input type="text" id="unfollowArray" data-role="tagsinput" class="form-select">
                     </div>
                     <div class="col-6">
                         <label>Ticker(s) to follow</label>
+                        <span class="starGreen">
+                            <i class="fa fa-star"></i>
+                        </span>
                         <input type="text" id="followArray" data-role="tagsinput" class="form-select">
                     </div>
                 </div>
@@ -141,23 +155,25 @@
                                 <th scope="col">Price Chge</th>
                                 <th scope="col">Price Chge(%)</th>
                                 <th scope="col">Volume Chge(%)</th>
-
+                                <th scope="col"></th>
+                                <th scope="col"></th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="snapshot in secSnapshot.slice(0,20)" v-bind:class="[$moment().diff($moment.unix(snapshot.time), 'seconds')>=(secUpdate-1)? 'oldData' : '']"> <!-- If data is older than secupdate minus 1 second, then it's old data -->
+                            <tr v-for="snapshot in secSnapshot.slice(0,20)" v-bind:class="[$moment().diff($moment.unix(snapshot.time), 'seconds')>=(secUpdate-1)? 'oldData' : '']">
+                                <!-- If data is older than secupdate minus 1 second, then it's old data -->
                                 <td>{{$moment.unix(snapshot.time).tz("America/New_York").format("hh:mm:ss")}}</td>
-                                
+
                                 <!-- SYMBOL -->
                                 <td>{{snapshot.symbol}}
-                                    <span v-show="followArray.includes(snapshot.symbol)" class="ps-1" style="font-size: 1em; color: green;">
+                                    <span v-show="followArray.includes(snapshot.symbol)" class="starGreen">
                                         <i class="fa fa-star"></i>
                                     </span>
                                 </td>
-                                
+
                                 <!-- PRICE -->
                                 <td v-bind:class="{'green1': (snapshot.updatePrice>=2 && snapshot.updatePrice<2.5) || (snapshot.updatePrice>=10 && snapshot.updatePrice<12), 'green2': (snapshot.updatePrice>=2.5 && snapshot.updatePrice<3) || (snapshot.updatePrice>=9 && snapshot.updatePrice<10), 'green3': (snapshot.updatePrice>=3.5 && snapshot.updatePrice<4) || (snapshot.updatePrice>=8 && snapshot.updatePrice<9), 'green4': snapshot.updatePrice>=4 && snapshot.updatePrice<8, 'red': snapshot.updatePrice<2}">{{snapshot.updatePrice}}</td>
-                                
+
                                 <!-- VOLUME -->
                                 <td v-bind:class="{'green1': (snapshot.volume>=1500000 && snapshot.volume<3000000), 'green2': (snapshot.volume>=3000000 && snapshot.volume<5000000), 'green3': (snapshot.volume>=5000000 && snapshot.volume<10000000), 'green4': snapshot.volume>=10000000, 'red': snapshot.volume<1500000}">
                                     <span v-if="snapshot.volume<1000000">{{Math.ceil(snapshot.volume/1000)}}k</span><span v-else>{{parseFloat(snapshot.volume/1000000).toFixed(1)}}M</span></td>
@@ -174,9 +190,20 @@
 
                                 <!-- PRICE CHANGE % -->
                                 <td v-bind:class="{'green1': snapshot.priceIncreasePc>=1 && snapshot.priceIncrease<2, 'green2': snapshot.priceIncreasePc>=2 && snapshot.priceIncrease<3, 'green3': snapshot.priceIncreasePc>=3 && snapshot.priceIncrease<4, 'green4': snapshot.priceIncreasePc>=4}">{{snapshot.priceIncreasePc}}%</td>
-                                
+
                                 <!-- VOLUME CHANGE % -->
                                 <td v-bind:class="{'green1': snapshot.volumeChange>=2 && snapshot.volumeChange<5, 'green2': snapshot.volumeChange>=5 && snapshot.volumeChange<7.5, 'green3': snapshot.volumeChange>=7.5 && snapshot.volumeChange<10, 'green4': snapshot.volumeChange>=10, 'red': snapshot.volumeChange<0}">{{snapshot.volumeChange}}%</td>
+
+                                <!-- UNFOLLOW -->
+                                <td v-on:click="addUnFollow(snapshot.symbol)">
+                                    <span class="eyeBlack">
+                                        <i class="fa fa-eye-slash"></i></span></td>
+
+                                <!-- FOLLOW -->
+                                <td v-on:click="addFollow(snapshot.symbol)">
+                                    <span class="starGreen">
+                                        <i class="fa fa-star"></i></span></td>
+
                             </tr>
                         </tbody>
                     </table>
@@ -215,10 +242,12 @@
                 data() {
                     return {
                         showAlert: false,
+                        showInfo: false,
                         showSettings: false,
                         showFilter: true,
                         showExclTickers: true,
                         alertMessage: null,
+                        infoMessage: null,
                         FMP_API: "FMP_API_KEY",
                         items: null,
                         sound: true,
@@ -526,6 +555,21 @@
                 watch: {},
 
                 methods: {
+                    addUnFollow(param) {
+                        console.log("row unfollow " + param)
+                        $('#unfollowArray').tagsinput('add', param.toUpperCase());
+                        this
+                            .unfollowArray
+                            .push(param.toUpperCase())
+                    },
+                    addFollow(param) {
+                        console.log("row follow " + param)
+                        $('#followArray').tagsinput('add', param.toUpperCase());
+                        this
+                            .followArray
+                            .push(param.toUpperCase())
+                        //$('#unfollowArray').tagsinput('add', event.item.toUpperCase());
+                    },
 
                     /** GET JSON WITH SYMBOLS AND SHARE FLOAT **/
                     getFloatTickers() {
@@ -591,11 +635,15 @@
 
                     //START INTERVALS
                     startIntervals() {
+                        var info = []
                         this.stopIntervals()
                         console.log("STARTING TIMER WITH 1 MIN AND " + this.secUpdate + " SEC INTERVAL")
                         //console.log(" -> Ticker array : " + JSON.stringify(this.tickerArray))
                         var date = new Date();
                         console.log((60 - date.getSeconds()) + " seconds left to full minute")
+                        info.push((60 - date.getSeconds()) + " seconds left to full minute")
+                        this.infoMessage = info
+                        this.showInfo = true
 
                         this.originalTimeout = setTimeout(() => { //setTimeout = wait for full minute to start
 
