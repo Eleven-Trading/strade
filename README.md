@@ -10,12 +10,12 @@ Trade Ideas is a great and very powerful stock scanner. However, I thought it wa
 - Customize the scan to your preferences
 
 ## Screenshots
-<img src="https://7ak-public.s3.amazonaws.com/strade_scanner_sreenshot.png" height="100">
+<img src="https://7ak-public.s3.amazonaws.com/strade_scanner_sreenshot.png" height="300">
 
 # Tech/framework used
 
 ## Built with
-- Bootstrap 4 
+- Bootstrap 5
 - VueJS
 
 ## Getting Started
