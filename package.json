@@ -1,6 +1,6 @@
 {
   "name": "strade",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "strade is an open source stock scanner/screener",
   "main": "gulpfile.js",
   "scripts": {
