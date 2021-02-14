@@ -40,10 +40,16 @@
     color: green;
     cursor: pointer
 }
+
 .eyeBlack{
     font-size: 1em;
     color: #333;
     cursor: pointer
+}
+
+.bellYellow {
+    font-size: 1em;
+    color: #ffcc00;
 }
 
 .alertBox{
@@ -77,4 +83,15 @@
     color: #333 !important;
     background-color: #e9ecef;
 
+}
+
+form.alertForm{
+    margin: 0 !important;
+}
+
+.smallForm.form-control{
+    padding: 0.5em !important;
+    height: 30px !important;
+}
+.alertForm input {
 }

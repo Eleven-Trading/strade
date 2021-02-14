@@ -9,7 +9,7 @@
     <body>
         <div id="vapp">
 
-        <!-- INFO
+            <!-- INFO
             <div v-show="showInfo" class="infoBox" role="alert">
                 <div class="container-fluid">
                     <span>
@@ -70,6 +70,8 @@
                     </div>
                 </div>
                 <hr>
+
+                <!-- FILTER -->
                 <div class="mt-3 mb-3">
                     <h5 class="ml-2 mt-3 d-inline">FILTER</h5>
                     <a class="d-inline" v-on:click="showFilter = !showFilter">
@@ -123,19 +125,32 @@
 
                 <!-- UNFOLLOW / FOLLOW TICKERS -->
                 <div class="row">
-                    <div class="col-6">
-                        <label>Ticker(s) to unfollow</label>
+                    <div class="col-3">
+                        <label class="mb-2">Ticker(s) to unfollow</label>
                         <span class="eyeBlack">
                             <i class="fa fa-eye-slash"></i>
                         </span>
                         <input type="text" id="unfollowArray" data-role="tagsinput" class="form-select">
                     </div>
-                    <div class="col-6">
-                        <label>Ticker(s) to follow</label>
+                    <div class="col-3">
+                        <label class="mb-2">Ticker(s) to follow</label>
                         <span class="starGreen">
                             <i class="fa fa-star"></i>
                         </span>
                         <input type="text" id="followArray" data-role="tagsinput" class="form-select">
+                    </div>
+                    <div class="col-6 row">
+                        <div class="col-auto">
+                            <label class="mb-2">Ticker Alerts</label>
+                            <span class="bellYellow">
+                                <i class="fa fa-bell"></i>
+                            </span>
+                        </div>
+                        <form v-on:keyup.enter="addAlert" class="col alertForm input-group">
+                            <input oninput="this.value = this.value.toUpperCase()" v-model="alertTicker" id="alertTicker" type="text" placeholder="ticker" class="smallForm form-control">
+                            <input v-model="alertPrice" id="alertPrice" type="number" placeholder="price alert" class="smallForm form-control">
+                        </form>
+                        <input type="text" id="alertArray" data-role="tagsinput" class="form-select">
                     </div>
                 </div>
                 <hr>
@@ -151,7 +166,7 @@
                                 <th scope="col">Price</th>
                                 <th scope="col">Volume</th>
                                 <th scope="col">Float</th>
-                                <th scope="col">Float Ratio</th>
+                                <!--<th scope="col">Float Ratio</th>-->
                                 <th scope="col">Price Chge</th>
                                 <th scope="col">Price Chge(%)</th>
                                 <th scope="col">Volume Chge(%)</th>
@@ -182,8 +197,8 @@
                                 <td v-bind:class="{'green1': (snapshot.float>=20000000 && snapshot.float<30000000) || (snapshot.float>=100000000 && snapshot.float<120000000), 'green2': (snapshot.float>=30000000 && snapshot.float<40000000) || (snapshot.float>=90000000 && snapshot.float<100000000), 'green3': (snapshot.float>=40000000 && snapshot.float<60000000) || (snapshot.float>=80000000 && snapshot.float<90000000), 'green4': snapshot.float>=60000000 && snapshot.float<80000000, 'red': snapshot.float<20000000}">
                                     <span v-if="snapshot.float<1000000">{{Math.ceil(snapshot.float/1000)}}k</span><span v-else>{{parseFloat(snapshot.float/1000000).toFixed(1)}}M</span></td>
 
-                                <!-- FLOAT RATIO -->
-                                <td v-bind:class="{'green1': snapshot.floatRatio>=0.5 && snapshot.floatRatio<1, 'green2': snapshot.floatRatio>=1 && snapshot.floatRatio<1.5, 'green3': snapshot.floatRatio>=1.5 && snapshot.floatRatio<2, 'green4': snapshot.floatRatio>=2}">{{snapshot.floatRatio}}</td>
+                                <!-- FLOAT RATIO
+                                <td v-bind:class="{'green1': snapshot.floatRatio>=0.5 && snapshot.floatRatio<1, 'green2': snapshot.floatRatio>=1 && snapshot.floatRatio<1.5, 'green3': snapshot.floatRatio>=1.5 && snapshot.floatRatio<2, 'green4': snapshot.floatRatio>=2}">{{snapshot.floatRatio}}</td>-->
 
                                 <!-- PRICE CHANGE -->
                                 <td v-bind:class="{'green1': snapshot.priceIncrease>=0.075 && snapshot.priceIncrease<0.10, 'green2': snapshot.priceIncrease>=0.10 && snapshot.priceIncrease<0.15, 'green3': snapshot.priceIncrease>=0.15 && snapshot.priceIncrease<0.20, 'green4': snapshot.priceIncrease>=0.20}">{{snapshot.priceIncrease}}$</td>
@@ -254,6 +269,9 @@
                         voice: 49,
                         unfollowArray: [],
                         followArray: [],
+                        alertTicker: null,
+                        alertPrice: null,
+                        alertArray: [],
                         /* Google US English(49), Google UK English Female (50), Google UK English Male (51), Thomas (0), Alex (1), Alice (2) */
                         originalTimeout: null,
                         firstSecInterval: null,
@@ -502,59 +520,45 @@
                     *5. Other
                     */
 
-                    // Input for unfollow tickers
-                    //https://bootstrap-tagsinput.github.io/bootstrap-tagsinput/examples/
-                    $('#unfollowArray').on('beforeItemAdd', (event) => {
-                        if (event.item !== event.item.toUpperCase()) {
-                            event.cancel = true;
-                            $('#unfollowArray').tagsinput('add', event.item.toUpperCase());
-                        }
-                    });
+                    // UNFOLLOW TICKER
+                    this.unfollowTicker()
 
-                    $('#unfollowArray').on('itemAdded', (event) => {
-                        console.log("Item to add " + event.item)
-                        this
-                            .unfollowArray
-                            .push(event.item)
-                        console.log("Items to unfollow " + this.unfollowArray)
-                    });
-                    $('#unfollowArray').on('itemRemoved', (event) => {
-                        console.log("Item to remove from unfollow " + event.item)
-                        this.unfollowArray = this
-                            .unfollowArray
-                            .filter(item => item !== event.item)
-                        console.log("Items to unfollow " + this.unfollowArray)
-                    });
+                    // FOLLOW TICKER
+                    this.followTicker()
 
-                    // Input for unfollow tickers
-                    //https://bootstrap-tagsinput.github.io/bootstrap-tagsinput/examples/
-                    $('#followArray').on('beforeItemAdd', (event) => {
-                        if (event.item !== event.item.toUpperCase()) {
-                            event.cancel = true;
-                            $('#followArray').tagsinput('add', event.item.toUpperCase());
-                        }
-                    });
-
-                    $('#followArray').on('itemAdded', (event) => {
-                        console.log("Item to add " + event.item)
-                        this
-                            .followArray
-                            .push(event.item)
-                        console.log("Items in following Array " + this.followArray)
-                    });
-                    $('#followArray').on('itemRemoved', (event) => {
-                        console.log("Item to remove from follow " + event.item)
-                        this.followArray = this
-                            .followArray
-                            .filter(item => item !== event.item)
-                        console.log("Items in following Array " + this.followArray)
-                    });
-
+                    // TICKER ALERT
+                    this.tickerAlert()
                 },
 
                 watch: {},
 
                 methods: {
+                    // UNFOLLOW TICKER
+                    unfollowTicker() {
+                        //https://bootstrap-tagsinput.github.io/bootstrap-tagsinput/examples/
+                        $('#unfollowArray').on('beforeItemAdd', (event) => {
+                            if (event.item !== event.item.toUpperCase()) {
+                                event.cancel = true;
+                                $('#unfollowArray').tagsinput('add', event.item.toUpperCase());
+                            }
+                        });
+
+                        $('#unfollowArray').on('itemAdded', (event) => {
+                            console.log("Item to add " + event.item)
+                            this
+                                .unfollowArray
+                                .push(event.item)
+                            console.log("Items to unfollow " + this.unfollowArray)
+                        });
+                        $('#unfollowArray').on('itemRemoved', (event) => {
+                            console.log("Item to remove from unfollow " + event.item)
+                            this.unfollowArray = this
+                                .unfollowArray
+                                .filter(item => item !== event.item)
+                            console.log("Items to unfollow " + this.unfollowArray)
+                        });
+                    },
+
                     addUnFollow(param) {
                         console.log("row unfollow " + param)
                         $('#unfollowArray').tagsinput('add', param.toUpperCase());
@@ -562,6 +566,32 @@
                             .unfollowArray
                             .push(param.toUpperCase())
                     },
+
+                    // FOLLOW TICKER
+                    followTicker() {
+                        $('#followArray').on('beforeItemAdd', (event) => {
+                            if (event.item !== event.item.toUpperCase()) {
+                                event.cancel = true;
+                                $('#followArray').tagsinput('add', event.item.toUpperCase());
+                            }
+                        });
+
+                        $('#followArray').on('itemAdded', (event) => {
+                            console.log("Item to add " + event.item)
+                            this
+                                .followArray
+                                .push(event.item)
+                            console.log("Items in following Array " + this.followArray)
+                        });
+                        $('#followArray').on('itemRemoved', (event) => {
+                            console.log("Item to remove from follow " + event.item)
+                            this.followArray = this
+                                .followArray
+                                .filter(item => item !== event.item)
+                            console.log("Items in following Array " + this.followArray)
+                        });
+                    },
+
                     addFollow(param) {
                         console.log("row follow " + param)
                         $('#followArray').tagsinput('add', param.toUpperCase());
@@ -569,6 +599,66 @@
                             .followArray
                             .push(param.toUpperCase())
                         //$('#unfollowArray').tagsinput('add', event.item.toUpperCase());
+                    },
+
+                    // TICKER ALERT
+                    tickerAlert() {
+                        $('#alertArray').on('beforeItemAdd', (event) => {
+                            ticker = event
+                                .item
+                                .split('@')[0]
+                            price = event
+                                .item
+                                .split('@')[1]
+                            if (ticker !== ticker.toUpperCase()) {
+                                event.cancel = true;
+                                $('#alertArray').tagsinput('add', ticker.toUpperCase() + "@" + price);
+                            }
+                        });
+
+                        $('#alertArray').on('itemAdded', (event) => {
+                            var temp = {}
+                            temp.ticker = event
+                                .item
+                                .split('@')[0]
+                            temp.price = event
+                                .item
+                                .split('@')[1]
+                            this
+                                .alertArray
+                                .push(temp)
+                            console.log("Items in alert Array " + JSON.stringify(this.alertArray))
+                        });
+
+                        $('#alertArray').on('itemRemoved', (event) => {
+                            console.log("Item to remove from alert " + event.item)
+                            ticker = event
+                                .item
+                                .split('@')[0]
+                            price = event
+                                .item
+                                .split('@')[1]
+
+                            this.alertArray = this
+                                .alertArray
+                                .filter((item => item.ticker !== ticker) && (item => item.price != price))
+                            console.log("Items in alert Array " + JSON.stringify(this.alertArray))
+
+                            //console.log("object key is "+ JSON.stringify(this.alertArray.filter( obj => obj.ticker === 'KXIN')))
+                        });
+
+                    },
+
+                    addAlert() {
+
+                        $('#alertArray').tagsinput('add', this.alertTicker.toUpperCase() + "@" + this.alertPrice);
+                        this.alertTicker = null
+                        this.alertPrice = null
+                        var tickerInAlert = this
+                            .tickerArray
+                            .includes('KNIX')
+
+                        console.log("ticker in alert " + tickerInAlert)
                     },
 
                     /** GET JSON WITH SYMBOLS AND SHARE FLOAT **/
@@ -783,6 +873,7 @@
                                         response
                                             .data
                                             .forEach(updateItem => {
+                                                /* Check if ticker in alert array */
 
                                                 /* Check if One min snapshot exists and that symbol exists in both one min and sec snapshot */
                                                 if (!!this.oneMinSnapshot && this.oneMinSnapshot.find(oneMinItem => oneMinItem.symbol === updateItem.symbol) != undefined) {
