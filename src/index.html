@@ -1,6 +1,6 @@
 <html>
     <head>
-        <link rel="icon" type="image/png" href="images/bull.png"/>
+        <link rel="icon" type="image/png" href="medias/bull.png"/>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
         <link rel="stylesheet" href="css/style.css"/>
         <script src="https://use.fontawesome.com/365512f0c3.js"></script>
@@ -8,7 +8,11 @@
     </head>
     <body>
         <div id="vapp">
-
+            <!--<span v-if="alertArray.find(element => element.ticker == 'KXIN') != undefined">
+                <span v-show="alertArray.find(element => element.ticker == 'KXIN').alert" class="bellYellow">
+                    <i class="fa fa-bell"></i>
+                </span>
+            </span>-->
             <!-- INFO
             <div v-show="showInfo" class="infoBox" role="alert">
                 <div class="container-fluid">
@@ -28,6 +32,8 @@
                         <span style="display: block" v-for="message in alertMessage">{{message}}</span></span>
                 </div>
             </div>
+
+            <!-- BODY -->
             <div class="container-fluid">
 
                 <!-- SOUND -->
@@ -123,8 +129,9 @@
                 </div>
                 <hr>
 
-                <!-- UNFOLLOW / FOLLOW TICKERS -->
+                <!-- UNFOLLOW, FOLLOW, ALERT TICKERS -->
                 <div class="row">
+                    <!-- UNFOLLOW -->
                     <div class="col-3">
                         <label class="mb-2">Ticker(s) to unfollow</label>
                         <span class="eyeBlack">
@@ -132,6 +139,7 @@
                         </span>
                         <input type="text" id="unfollowArray" data-role="tagsinput" class="form-select">
                     </div>
+                    <!-- FOLLOW TICKERS -->
                     <div class="col-3">
                         <label class="mb-2">Ticker(s) to follow</label>
                         <span class="starGreen">
@@ -139,6 +147,7 @@
                         </span>
                         <input type="text" id="followArray" data-role="tagsinput" class="form-select">
                     </div>
+                    <!-- ALERT TICKERS -->
                     <div class="col-6 row">
                         <div class="col-auto">
                             <label class="mb-2">Ticker Alerts</label>
@@ -183,6 +192,11 @@
                                 <td>{{snapshot.symbol}}
                                     <span v-show="followArray.includes(snapshot.symbol)" class="starGreen">
                                         <i class="fa fa-star"></i>
+                                    </span>
+                                    <span v-if="alertArray.find(element => element.ticker == snapshot.symbol) != undefined">
+                                        <span v-show="alertArray.find(element => element.ticker == snapshot.symbol).alert" class="bellYellow">
+                                            <i class="fa fa-bell"></i>
+                                        </span>
                                     </span>
                                 </td>
 
@@ -267,6 +281,7 @@
                         items: null,
                         sound: true,
                         voice: 49,
+                        voiceVolume: 0.9,
                         unfollowArray: [],
                         followArray: [],
                         alertTicker: null,
@@ -489,6 +504,7 @@
                         msg.voice = voices[this.voice];
                         msg.rate = 0.9; // From 0.1 to 10
                         msg.lang = 'en';
+                        msg.volume = this.voiceVolume
                         msg.text = "Speech is activated";
                         window
                             .speechSynthesis
@@ -624,6 +640,7 @@
                             temp.price = event
                                 .item
                                 .split('@')[1]
+                            temp.alert = false
                             this
                                 .alertArray
                                 .push(temp)
@@ -654,14 +671,9 @@
                         $('#alertArray').tagsinput('add', this.alertTicker.toUpperCase() + "@" + this.alertPrice);
                         this.alertTicker = null
                         this.alertPrice = null
-                        var tickerInAlert = this
-                            .tickerArray
-                            .includes('KNIX')
-
-                        console.log("ticker in alert " + tickerInAlert)
                     },
 
-                    /** GET JSON WITH SYMBOLS AND SHARE FLOAT **/
+                    // GET JSON WITH SYMBOLS AND SHARE FLOAT
                     getFloatTickers() {
                         var error = []
                         console.log("GETTING JSON WITH SYMBOLS AND SHARE FLOAT ")
@@ -873,9 +885,71 @@
                                         response
                                             .data
                                             .forEach(updateItem => {
-                                                /* Check if ticker in alert array */
 
-                                                /* Check if One min snapshot exists and that symbol exists in both one min and sec snapshot */
+                                                /*
+                                                /* 1 Check if ticker is in alert array
+                                                */
+                                                var elementsIndex = this
+                                                    .alertArray
+                                                    .findIndex(element => element.ticker == updateItem.symbol)
+
+                                                if (elementsIndex >= 0) {
+
+                                                    var alertStatus = this
+                                                        .alertArray[elementsIndex]
+                                                        .alert
+                                                        console
+                                                        .log(" -> Alert status of symbol " + updateItem.symbol + " is " + alertStatus)
+
+                                                    var alertPrice = this
+                                                        .alertArray[elementsIndex]
+                                                        .price
+
+                                                    //if current price above alert price and alert false we update alert status
+                                                    //Update value in tested array
+                                                    //https://medium.com/javascript-in-plain-english/react-updating-a-value-in-state-array-7bae7c7eaef9
+                                                    if (updateItem.price >= alertPrice && alertStatus === false) {
+                                                        console.log("-> Current price is " + updateItem.price + ", above alert price and alert is false. We send new alert")
+                                                        var newArray = [...this.alertArray]
+                                                        newArray[elementsIndex] = {
+                                                            ...newArray[elementsIndex],
+                                                            alert: !newArray[elementsIndex].alert
+                                                        }
+                                                        this.alertArray = newArray
+                                                        console.log(" -> Items in alert Array " + JSON.stringify(this.alertArray))
+                                                        const audio = new Audio("medias/notification_simple_ui_6.mp3");
+                                                        audio.volume = 1
+                                                        audio.play();
+                                                        if (this.sound) {
+                                                            var msg = new SpeechSynthesisUtterance();
+                                                            var voices = speechSynthesis.getVoices();
+                                                            msg.voice = voices[this.voice];
+                                                            msg.rate = 0.9; // From 0.1 to 10
+                                                            msg.lang = 'en';
+                                                            msg.volume = this.voiceVolume
+                                                            msg.text = "Price alert on, " + updateItem.symbol;
+                                                            window
+                                                                .speechSynthesis
+                                                                .speak(msg);
+                                                        }
+                                                    }
+
+                                                    //if current price is (back) below alert price and alert is true we update alert status
+                                                    if (updateItem.price < alertPrice && alertStatus === true) {
+                                                        console.log("-> Current price is back below alert price and alert is true. We update alert status back to false")
+                                                        var newArray = [...this.alertArray]
+                                                        newArray[elementsIndex] = {
+                                                            ...newArray[elementsIndex],
+                                                            alert: !newArray[elementsIndex].alert
+                                                        }
+                                                        this.alertArray = newArray
+                                                        console.log(" -> Items in alert Array " + JSON.stringify(this.alertArray))
+                                                    }
+                                                }
+
+                                                /*
+                                                /* 2. Check if One min snapshot exists and that symbol exists in both one min and sec snapshot
+                                                */
                                                 if (!!this.oneMinSnapshot && this.oneMinSnapshot.find(oneMinItem => oneMinItem.symbol === updateItem.symbol) != undefined) {
 
                                                     /* Find the whole object of the symbol that matches */
@@ -903,6 +977,7 @@
                                                             msg.voice = voices[this.voice];
                                                             msg.rate = 0.9; // From 0.1 to 10
                                                             msg.lang = 'en';
+                                                            msg.volume = this.voiceVolume
                                                             msg.text = updateItem.symbol;
                                                             window
                                                                 .speechSynthesis

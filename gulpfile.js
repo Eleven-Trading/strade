@@ -18,9 +18,9 @@ var paths = {
         src: "src/icons/**/*",
         dest: "dist/icons/"
     },
-    imagesPath: {
-        src: "src/images/**/*",
-        dest: "dist/images/"
+    mediasPath: {
+        src: "src/medias/**/*",
+        dest: "dist/medias/"
     },
     scriptsPath: {
         src: "src/scripts/**/*",
@@ -51,10 +51,10 @@ function iconsFunction() {
         .pipe(browserSync.stream());
 };
 
-function imagesFunction() {
-    return gulp.src(paths.imagesPath.src, { allowEmpty: true })
-        .pipe(changed(paths.imagesPath.dest))
-        .pipe(gulp.dest(paths.imagesPath.dest))
+function mediasFunction() {
+    return gulp.src(paths.mediasPath.src, { allowEmpty: true })
+        .pipe(changed(paths.mediasPath.dest))
+        .pipe(gulp.dest(paths.mediasPath.dest))
         .pipe(browserSync.stream());
 };
 
@@ -117,14 +117,14 @@ function watch() {
     log("watching !!");
     gulp.watch(paths.cssPath.src, cssFunction);
     gulp.watch(paths.iconsPath.src, iconsFunction);
-    gulp.watch(paths.imagesPath.src, imagesFunction);
+    gulp.watch(paths.mediasPath.src, mediasFunction);
     gulp.watch(paths.scriptsPath.src, scriptsFunction);
     gulp.watch(paths.viewsPath.src, viewsFunction);
     gulp.watch(paths.captainPath.src, captainFunction);
 }
 
 /******** GULP *********/
-var prod = gulp.parallel(cssFunction, iconsFunction, imagesFunction, scriptsFunction, viewsFunction, captainFunction);
+var prod = gulp.parallel(cssFunction, iconsFunction, mediasFunction, scriptsFunction, viewsFunction, captainFunction);
 var build = gulp.parallel(prod, browserInit, phpLaunchFunction, watch); //run prod is necessary in case clean has beed done before
 
 gulp.task('default', build);
