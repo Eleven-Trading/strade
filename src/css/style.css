@@ -1,7 +1,7 @@
 .blueIcon{
     color: #0dcaf0;
 }
-.oldData, .oldData .green1, .oldData .green2, .oldData .green3, .oldData .green4, .oldData .red, .oldData .starGreen, .oldData .eyeBlack {
+.oldData, .oldData .green1, .oldData .green2, .oldData .green3, .oldData .green4, .oldData .red, .oldData .redLight, .oldData .starGreen, .oldData .eyeBlack {
     color: rgb(160, 158, 158);
     background-color: transparent !important; 
 }
@@ -33,6 +33,10 @@
 .red{
     background-color: #ff3333 !important; 
     color: white;
+}
+
+.redLight{
+    background-color: #ffa0a0 !important; 
 }
 
 .starGreen {
@@ -93,5 +97,15 @@ form.alertForm{
     padding: 0.5em !important;
     height: 30px !important;
 }
-.alertForm input {
+
+.ifThen {
+    font-size: xx-small !important;
+   }
+
+.ifThen .form-select {
+ font-size: xx-small !important;
 }
+
+.ifThen .form-control {
+    font-size: xx-small !important;
+   }
