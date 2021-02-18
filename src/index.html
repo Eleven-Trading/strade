@@ -36,50 +36,191 @@
             <!-- BODY -->
             <div class="container-fluid">
 
-                <!-- SOUND -->
+                <!-- SETTINGS -->
                 <div class="mt-2">
-                    <h5 class="ml-2 mt-3 d-inline">SETTINGS</h5>
-                    <a class="d-inline" v-on:click="showSettings = !showSettings">
-                        <span v-if="showSettings">
-                            <i class="blueIcon fa fa-caret-down"></i>
-                        </span>
-                        <span v-else>
-                            <i class="blueIcon fa fa-caret-up"></i>
-                        </span>
-                    </a>
+                    <!-- title -->
+                    <div class="mb-2">
+                        <h5 class="ms-2 me-3 d-inline">SETTINGS</h5>
+                        <a class="d-inline" v-on:click="showSettings = !showSettings">
+                            <span v-if="showSettings">
+                                <i class="blueIcon fa fa-caret-down"></i>
+                            </span>
+                            <span v-else>
+                                <i class="blueIcon fa fa-caret-up"></i>
+                            </span>
+                        </a>
+                    </div>
 
-                    <div v-show="showSettings" class="mt-1 row g-3 align-items-center">
-                        <div class="col-auto">
-                            <button class="btn btn-info audioButton" v-on:click="sound = !sound">
-                                <span v-if="sound == true">
-                                    <i class="fa fa-volume-up"></i>
-                                </span>
-                                <span v-else>
-                                    <i class="fa fa-volume-off"></i></span></button>
+                    <div v-show="showSettings">
+                        <!-- setting 1: sound, time... -->
+                        <div class="me-1 row align-items-center mb-3">
+                            <div class="col-auto">
+                                <button class="btn btn-info audioButton" v-on:click="sound = !sound">
+                                    <span v-if="sound == true">
+                                        <i class="fa fa-volume-up"></i>
+                                    </span>
+                                    <span v-else>
+                                        <i class="fa fa-volume-off"></i></span></button>
+                            </div>
+
+                            <div class="col-auto">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fa fa-retweet"></i>
+                                    </span>
+
+                                    <select v-on:input="secUpdate = $event.target.value; if ($event.target.value == 0){stopIntervals()}else{startIntervals()}" class="form-select">
+                                        <option value="0" selected>STOP</option>
+                                        <option value="10" selected>10s</option>
+                                        <option value="5">5s</option>
+                                        <option value="15">15s</option>
+                                        <option value="20">20s</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="col-auto">
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="fa fa-retweet"></i>
-                                </span>
+                        <!-- setting 2: colors -->
+                        <div class="row">
+                            <form @submit.prevent="addColors" class="row g-3 align-items-center">
+                                <h6>Colors</h6>
+                                <!-- IF -->
+                                <div class="row mb-1">
+                                    <div class="col-3">
+                                        <select v-model="colorsType" class="form-select" aria-label="Default select example">
+                                            <option value=null selected>IF</option>
+                                            <option value="price">Price</option>
+                                            <option value="volume">Volume</option>
+                                            <option value="float">Float</option>
+                                            <option value="priceChge">Price Chge</option>
+                                            <option value="priceChgePc">Price Chge (%)</option>
+                                            <option value="volChgePc">Volume Chge (%)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-2">
+                                        <select v-model="colorsHighLow1" class="form-select">
+                                            <option v-for="hl in highLowArray" v-bind:value="hl.value">{{hl.text}}</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-2">
+                                        <input v-model="colorsValue1" type="number" step="0.01" class="form-control">
+                                    </div>
+                                    <div class="col-1">
+                                        <i @click="showAndOr1 = true" class="fa fa-plus-circle"></i>
+                                    </div>
 
-                                <select v-on:input="secUpdate = $event.target.value; if ($event.target.value == 0){stopIntervals()}else{startIntervals()}" class="form-select">
-                                    <option value="0" selected>STOP</option>
-                                    <option value="10" selected>10s</option>
-                                    <option value="5">5s</option>
-                                    <option value="15">15s</option>
-                                    <option value="20">20s</option>
-                                </select>
+                                    <!-- THEN -->
+
+                                    <div class="col-3">
+                                        <select v-model="colorsColor" class="form-select">
+                                            <option value=null selected>THEN</option>
+                                            <option v-for="col in colorArray" v-bind:value="col.value">{{col.text}}</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-1">
+                                        <button type="submit" class="btn btn-outline-success">ADD</button>
+                                    </div>
+                                </div>
+                                <!-- AND/OR 1 -->
+                                <div v-show="showAndOr1" class="row mb-1">
+                                    <div class="col-2 offset-1">
+                                        <select v-model="andOr1" class="form-select">
+                                            <option v-for="oa in orAnd" v-bind:value="oa.value">{{oa.text}}</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-2">
+                                        <select v-model="colorsHighLow2" class="form-select">
+                                            <option v-for="hl in highLowArray" v-bind:value="hl.value">{{hl.text}}</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-2">
+                                        <input v-model="colorsValue2" type="number" class="form-control">
+                                    </div>
+                                    <div class="col-1">
+                                        <i @click="showAndOr2 = true" class="fa fa-plus-circle"></i>
+                                        <i @click="showAndOr1 = false; andOr1=null; colorsHighLow2=null; colorsValue2=null" class="fa fa-minus-circle"></i>
+                                    </div>
+                                </div>
+
+                                <!-- AND/OR 2 -->
+                                <div v-show="showAndOr2" class="row mb-1">
+                                    <div class="col-2 offset-1">
+                                        <select v-model="andOr2" class="form-select">
+                                            <option v-for="oa in orAnd" v-bind:value="oa.value">{{oa.text}}</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-2">
+                                        <select v-model="colorsHighLow3" class="form-select">
+                                            <option v-for="hl in highLowArray" v-bind:value="hl.value">{{hl.text}}</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-2">
+                                        <input v-model="colorsValue3" type="number" class="form-control">
+                                    </div>
+                                    <div class="col-1">
+                                        <i @click="showAndOr3 = true" class="fa fa-plus-circle"></i>
+                                        <i @click="showAndOr2 = false; andOr2=null; colorsHighLow3=null; colorsValue3=null" class="fa fa-minus-circle"></i>
+                                    </div>
+                                </div>
+
+                                <!-- AND/OR 3 -->
+                                <div v-show="showAndOr3" class="row mb-1">
+                                    <div class="col-2 offset-1">
+                                        <select v-model="andOr3" class="form-select">
+                                            <option v-for="oa in orAnd" v-bind:value="oa.value">{{oa.text}}</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-2">
+                                        <select v-model="colorsHighLow4" class="form-select">
+                                            <option v-for="hl in highLowArray" v-bind:value="hl.value">{{hl.text}}</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-2">
+                                        <input v-model="colorsValue4" type="number" class="form-control">
+                                    </div>
+                                    <div class="col-1">
+                                        <i @click="showAndOr3 = false; andOr3=null; colorsHighLow4=null; colorsValue4=null" class="fa fa-minus-circle"></i>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <!-- color list
+                            <div class="col-6">
+                                <table class="table text-center">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th scope="col">Element</th>
+                                            <th scope="col">Color Code</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(color, index) in colors">
+                                            <td>{{index}}</td>
+                                            <td>
+                                                <span v-for="(col, ind) in color">{{col.css}}><span v-if="ind != (color.length - 1)">,</span></span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>-->
+                        </div>
+                        <!-- end colors settings -->
+                        <!-- Existing colors -->
+                        <div class="row">
+                            <div v-for="(color, index) in colors" class="col-auto">
+                                <span>{{index}}</span>
+                                <i class="fa fa-info-circle" data-bs-toggle="modal" data-bs-target="#exampleModal"></i>
                             </div>
                         </div>
                     </div>
+                    <!-- end show/hide setting -->
                 </div>
+                <!-- end settings -->
                 <hr>
 
                 <!-- FILTER -->
-                <div class="mt-3 mb-3">
-                    <h5 class="ml-2 mt-3 d-inline">FILTER</h5>
+                <div class="me-3 mb-3">
+                    <h5 class="ms-2 me-3 d-inline">FILTER</h5>
                     <a class="d-inline" v-on:click="showFilter = !showFilter">
                         <span v-if="showFilter">
                             <i class="blueIcon fa fa-caret-down"></i>
@@ -165,8 +306,8 @@
                 <hr>
 
                 <!-- MOMO TABLE -->
-                <div class="mt-3">
-                    <h3 class="ml-2 mt-3 text-blue">MOMO</h3>
+                <div class="me-3">
+                    <h3 class="ms-2 me-3 text-blue">MOMO</h3>
                     <table class="table text-center">
                         <thead class="thead-dark">
                             <tr>
@@ -272,8 +413,117 @@
                     return {
                         showAlert: false,
                         showInfo: false,
-                        showSettings: false,
+                        showSettings: true,
                         showFilter: true,
+                        highLowArray: [
+                            {
+                                value: ">",
+                                text: ">"
+                            }, {
+                                value: ">=",
+                                text: ">="
+                            }, {
+                                value: "<",
+                                text: "<"
+                            }, {
+                                value: "<=",
+                                text: "<="
+                            }
+                        ],
+                        orAnd: [
+                            {
+                                value: "||",
+                                text: "OR"
+                            }, {
+                                value: "&&",
+                                text: "AND"
+                            }
+                        ],
+                        colorArray: [
+                            {
+                                value: "green1",
+                                text: "green1"
+                            }, {
+                                value: "green2",
+                                text: "green2"
+                            }, {
+                                value: "green3",
+                                text: "green3"
+                            }, {
+                                value: "green4",
+                                text: "green4"
+                            }, {
+                                value: "red",
+                                text: "red"
+                            }, {
+                                value: "redLight",
+                                text: "redLight"
+                            }
+                        ],
+                        colorsType: null,
+                        showAndOr1: false,
+                        showAndOr2: false,
+                        showAndOr3: false,
+                        colorsHighLow1: null,
+                        colorsValue1: null,
+                        andOr1: null,
+                        colorsHighLow2: null,
+                        colorsValue2: null,
+                        andOr2: null,
+                        colorsHighLow3: null,
+                        colorsValue3: null,
+                        andOr3: null,
+                        colorsHighLow4: null,
+                        colorsValue4: null,
+                        colorsColor: null,
+                        colors: {
+                            price: [
+                                {
+                                    color: "green1",
+                                    desc: "(price>=2 && price<2.5) || (price>=10 && price<12)",
+                                    css: "'green1': (snapshot.updatePrice>=2 && snapshot.updatePrice<2.5) || (snapshot.updatePrice>=10 && snapshot.updatePrice<12)"
+                                }, {
+                                    color: "green2",
+                                    desc: "(price>=2.5 && price<3) || (price>=9 && price<10)",
+                                    css: "'green2': (snapshot.updatePrice>=2.5 && snapshot.updatePrice<3) || (snapshot.updatePrice>=9 && snapshot.updatePrice<10)"
+                                }, {
+                                    color: "green3",
+                                    desc: "(price>=3.5 && price<4) || (price>=8 && price<9)",
+                                    css: "'green3': (snapshot.updatePrice>=3.5 && snapshot.updatePrice<4) || (snapshot.updatePrice>=8 && snapshot.updatePrice<9)"
+                                }, {
+                                    color: "green4",
+                                    desc: "price>=4 && price<8",
+                                    css: "'green4': snapshot.updatePrice>=4 && snapshot.updatePrice<8"
+                                }, {
+                                    color: "red",
+                                    desc: "price<2",
+                                    css: "'red': snapshot.updatePrice<2"
+                                }
+                            ],
+                            volume: [
+                                {
+                                    color: "green1",
+                                    desc: "",
+                                    css: "'green1': (snapshot.volume>=1500000 && snapshot.volume<3000000)"
+                                }, {
+                                    color: "green2",
+                                    desc: "",
+                                    css: "'green2': (snapshot.volume>=3000000 && snapshot.volume<5000000)"
+                                }, {
+                                    color: "green3",
+                                    desc: "",
+                                    css: "'green3': (snapshot.volume>=5000000 && snapshot.volume<10000000)"
+                                }, {
+                                    color: "green4",
+                                    desc: "",
+                                    css: "'green4': snapshot.volume>=10000000"
+                                }, {
+                                    color: "red",
+                                    desc: "",
+                                    css: "'red': snapshot.volume<1500000"
+                                }
+                            ]
+                        },
                         showExclTickers: true,
                         alertMessage: null,
                         infoMessage: null,
@@ -451,7 +701,9 @@
                                 label: "2%"
                             }
                         ],
-                        minVolPc: 0.05,
+                        minVolPc: localStorage.getItem('minVolPc')
+                            ? localStorage.getItem('minVolPc')
+                            : 0.05,
                         minVolPcArray: [
                             {
                                 value: 0,
@@ -555,11 +807,78 @@
 
                     // TICKER ALERT
                     this.tickerAlert()
+
+                    var tooltipTriggerList = []
+                        .slice
+                        .call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                        return new bootstrap.Tooltip(tooltipTriggerEl)
+                    })
                 },
 
-                watch: {},
+                watch: {
+                    minVolPc: function () {
+                        console.log(" -> minVolPc " + this.minVolPc)
+                        localStorage.setItem('minVolPc', this.minVolPc)
+                    }
+                },
 
                 methods: {
+
+                    addColors() {
+                        console.log("colors " + this.colorsType + ", " + this.colorsHighLow1 + ", " + this.colorsValue1 + " color " + this.colorsColor)
+                        //"{'green1': (snapshot.updatePrice>=2 && snapshot.updatePrice<2.5) || (snapshot.updatePrice>=10 && snapshot.updatePrice<12), 'green2': (snapshot.updatePrice>=2.5 && snapshot.updatePrice<3) || (snapshot.updatePrice>=9 && snapshot.updatePrice<10), 'green3': (snapshot.updatePrice>=3.5 && snapshot.updatePrice<4) || (snapshot.updatePrice>=8 && snapshot.updatePrice<9), 'green4': snapshot.updatePrice>=4 && snapshot.updatePrice<8, 'red': snapshot.updatePrice<2}"
+
+                        if (this.colorsType == "price") {
+                            snap = "updatePrice"
+                        }
+                        if (this.colorsType == "volume") {
+                            snap = "volume"
+                        }
+
+                        if (this.colorsValue1 != null) {
+                            var tempCss = "'" + this.colorsColor + "': (snapshot." + snap + " " + this.colorsHighLow1 + " " + this.colorsValue1 + ")"
+                        }
+
+                        if (this.colorsValue2 != null) {
+                            var tempCss = "'" + this.colorsColor + "': (snapshot." + snap + " " + this.colorsHighLow1 + " " + this.colorsValue1 + " " + this.andOr1 + " snapshot." + snap + " " + this.colorsHighLow2 + " " + this.colorsValue2 + ")"
+                        }
+
+                        if (this.colorsValue3 != null) {
+                            var tempCss = "'" + this.colorsColor + "': (snapshot." + snap + " " + this.colorsHighLow1 + " " + this.colorsValue1 + " " + this.andOr1 + " snapshot." + snap + " " + this.colorsHighLow2 + " " + this.colorsValue2 + ") " + this.andOr2 + " (snapshot." + snap + " " + this.colorsHighLow3 + " " + this.colorsValue3 + ")"
+                        }
+
+                        if (this.colorsValue4 != null) {
+                            var tempCss = "'" + this.colorsColor + "': (snapshot." + snap + " " + this.colorsHighLow1 + " " + this.colorsValue1 + " " + this.andOr1 + " snapshot." + snap + " " + this.colorsHighLow2 + " " + this.colorsValue2 + ") " + this.andOr2 + " (snapshot." + snap + " " + this.colorsHighLow3 + " " + this.colorsValue3 + " " + this.andOr3 + " snapshot." + snap + " " + this.colorsHighLow4 + " " + this.colorsValue4 + ")"
+                        }
+
+                        //Check if color alredy exists.
+                        //https://medium.com/javascript-in-plain-english/react-updating-a-value-in-state-array-7bae7c7eaef9
+                        console.log("this.colors before index " + JSON.stringify(this.colors) + " and color " + this.colorsColor)
+                        var elementsIndex = this
+                            .colors[this.colorsType]
+                            .findIndex(element => element.color == this.colorsColor)
+
+                        //if yes, replace
+                        if (elementsIndex >= 0) {
+                            var newArray = [...this.colors[this.colorsType]]
+                            newArray[elementsIndex] = {
+                                ...newArray[elementsIndex],
+                                css: tempCss
+                            }
+                            this.colors[this.colorsType] = newArray
+                            console.log("this.colors " + JSON.stringify(this.colors))
+                        } else { // if not, add
+                            var temp = {}
+                            temp.color = this.colorsColor
+                            temp.css = tempCss
+                            this
+                                .colors[this.colorsType]
+                                .push(temp)
+                            console.log("this.colors " + JSON.stringify(this.colors))
+                        }
+
+                    },
                     // UNFOLLOW TICKER
                     unfollowTicker() {
                         //https://bootstrap-tagsinput.github.io/bootstrap-tagsinput/examples/
