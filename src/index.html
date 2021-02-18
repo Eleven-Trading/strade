@@ -137,7 +137,7 @@
                         <span class="eyeBlack">
                             <i class="fa fa-eye-slash"></i>
                         </span>
-                        <input type="text" id="unfollowArray" data-role="tagsinput" class="form-select">
+                        <input type="text" id="unfollowArray" v-bind:value="unfollowArray.join()" data-role="tagsinput" class="form-select" >
                     </div>
                     <!-- FOLLOW TICKERS -->
                     <div class="col-3">
@@ -145,7 +145,7 @@
                         <span class="starGreen">
                             <i class="fa fa-star"></i>
                         </span>
-                        <input type="text" id="followArray" data-role="tagsinput" class="form-select">
+                        <input type="text" id="followArray" v-bind:value="followArray.join()" data-role="tagsinput" class="form-select">
                     </div>
                     <!-- ALERT TICKERS -->
                     <div class="col-6 row">
@@ -159,7 +159,7 @@
                             <input oninput="this.value = this.value.toUpperCase()" v-model="alertTicker" id="alertTicker" type="text" placeholder="ticker" class="smallForm form-control">
                             <input v-model="alertPrice" id="alertPrice" type="number" placeholder="price alert" class="smallForm form-control">
                         </form>
-                        <input type="text" id="alertArray" data-role="tagsinput" class="form-select">
+                        <input type="text" id="alertArray" v-bind:value="alertArray.join()" data-role="tagsinput" class="form-select">
                     </div>
                 </div>
                 <hr>
@@ -282,11 +282,23 @@
                         sound: true,
                         voice: 49,
                         voiceVolume: 0.9,
-                        unfollowArray: [],
-                        followArray: [],
+                        unfollowArray: localStorage.getItem('unfollowArray')
+                            ? localStorage
+                                .getItem('unfollowArray')
+                                .split(',')
+                            : [],
+                        followArray: localStorage.getItem('followArray')
+                            ? localStorage
+                                .getItem('followArray')
+                                .split(',')
+                            : [],
+                        alertArray: localStorage.getItem('alertArray')
+                            ? localStorage
+                                .getItem('alertArray')
+                                .split(',')
+                            : [],
                         alertTicker: null,
                         alertPrice: null,
-                        alertArray: [],
                         /* Google US English(49), Google UK English Female (50), Google UK English Male (51), Thomas (0), Alex (1), Alice (2) */
                         originalTimeout: null,
                         firstSecInterval: null,
@@ -486,7 +498,7 @@
                                 * CREATED
                                 *
                                 ***********************/
-                afterCreated() {},
+                created() {},
 
                 /***********************
                                 *
@@ -498,7 +510,6 @@
                     *1. Avoid annoying speechsynthesis error and alert that speech is activated. Remember that user needs to interact with the screen. A better option is to make an alert to make sure user interacts with page on load.
                     */
                     speechFunction = () => {
-                        //alert("Speech will be activated")
                         var msg = new SpeechSynthesisUtterance();
                         var voices = speechSynthesis.getVoices();
                         msg.voice = voices[this.voice];
@@ -565,22 +576,23 @@
                                 .unfollowArray
                                 .push(event.item)
                             console.log("Items to unfollow " + this.unfollowArray)
+                            localStorage.setItem('unfollowArray', this.unfollowArray);
+                            console.log("local storage unfollow " + localStorage.getItem('unfollowArray'))
+
                         });
                         $('#unfollowArray').on('itemRemoved', (event) => {
-                            console.log("Item to remove from unfollow " + event.item)
+                            console.log("Item to remove from unfollow " + this.unfollowArray + " is " + event.item)
                             this.unfollowArray = this
                                 .unfollowArray
                                 .filter(item => item !== event.item)
                             console.log("Items to unfollow " + this.unfollowArray)
+                            localStorage.setItem('unfollowArray', this.unfollowArray);
                         });
                     },
 
                     addUnFollow(param) {
                         console.log("row unfollow " + param)
                         $('#unfollowArray').tagsinput('add', param.toUpperCase());
-                        this
-                            .unfollowArray
-                            .push(param.toUpperCase())
                     },
 
                     // FOLLOW TICKER
@@ -598,22 +610,26 @@
                                 .followArray
                                 .push(event.item)
                             console.log("Items in following Array " + this.followArray)
+                            localStorage.setItem('followArray', this.followArray);
+                            console.log("local storage followArray " + localStorage.getItem('followArray'))
+
                         });
                         $('#followArray').on('itemRemoved', (event) => {
                             console.log("Item to remove from follow " + event.item)
                             this.followArray = this
                                 .followArray
                                 .filter(item => item !== event.item)
-                            console.log("Items in following Array " + this.followArray)
+                            console.log("Items to follow " + this.followArray)
+                            localStorage.setItem('followArray', this.followArray);
                         });
                     },
 
                     addFollow(param) {
                         console.log("row follow " + param)
                         $('#followArray').tagsinput('add', param.toUpperCase());
-                        this
+                        /*this
                             .followArray
-                            .push(param.toUpperCase())
+                            .push(param.toUpperCase())*/
                         //$('#unfollowArray').tagsinput('add', event.item.toUpperCase());
                     },
 
@@ -633,35 +649,22 @@
                         });
 
                         $('#alertArray').on('itemAdded', (event) => {
-                            var temp = {}
-                            temp.ticker = event
-                                .item
-                                .split('@')[0]
-                            temp.price = event
-                                .item
-                                .split('@')[1]
-                            temp.alert = false
+                            console.log("Item to add " + event.item)
                             this
                                 .alertArray
-                                .push(temp)
-                            console.log("Items in alert Array " + JSON.stringify(this.alertArray))
+                                .push(event.item)
+                            console.log("Items in alertArray " + this.alertArray)
+                            localStorage.setItem('alertArray', this.alertArray);
+                            console.log("local storage alertArray " + localStorage.getItem('alertArray'))
                         });
 
                         $('#alertArray').on('itemRemoved', (event) => {
-                            console.log("Item to remove from alert " + event.item)
-                            ticker = event
-                                .item
-                                .split('@')[0]
-                            price = event
-                                .item
-                                .split('@')[1]
-
+                            console.log("Item to remove from follow " + event.item)
                             this.alertArray = this
                                 .alertArray
-                                .filter((item => item.ticker !== ticker) && (item => item.price != price))
-                            console.log("Items in alert Array " + JSON.stringify(this.alertArray))
-
-                            //console.log("object key is "+ JSON.stringify(this.alertArray.filter( obj => obj.ticker === 'KXIN')))
+                                .filter(item => item !== event.item)
+                            console.log("Items in alertArray " + this.alertArray)
+                            localStorage.setItem('alertArray', this.alertArray);
                         });
 
                     },
@@ -807,9 +810,12 @@
 
                     //GET SNAPSHOTS (1 MINUTE AND SECONDS)
                     getSnapshot(param) {
+                        var msg = new SpeechSynthesisUtterance();
+                        var voices = speechSynthesis.getVoices();
                         var error = []
                         var date = new Date();
                         console.log(param.toUpperCase() + " SNAPSHOT at " + date.getSeconds())
+
                         if (param == "fiveMin") {
                             this.fiveMinSnapshot = []
                         }
@@ -921,8 +927,6 @@
                                                         audio.volume = 1
                                                         audio.play();
                                                         if (this.sound) {
-                                                            var msg = new SpeechSynthesisUtterance();
-                                                            var voices = speechSynthesis.getVoices();
                                                             msg.voice = voices[this.voice];
                                                             msg.rate = 0.9; // From 0.1 to 10
                                                             msg.lang = 'en';
@@ -972,8 +976,6 @@
                                                         console.log(" -> MOMO data")
                                                         //console.log("-> priceDiff "+priceDiff+", volume pc "+volumePc+ "and min vol pc "+this.minVolPc)
                                                         if (this.sound) {
-                                                            var msg = new SpeechSynthesisUtterance();
-                                                            var voices = speechSynthesis.getVoices();
                                                             msg.voice = voices[this.voice];
                                                             msg.rate = 0.9; // From 0.1 to 10
                                                             msg.lang = 'en';
