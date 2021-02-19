@@ -191,15 +191,10 @@
                                     <thead class="thead-dark">
                                         <tr>
                                             <th scope="col">Element</th>
-                                            <th scope="col">Color Code</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="(color, index) in colors">
-                                            <td>{{index}}</td>
-                                            <td>
-                                                <span v-for="(col, ind) in color">{{col.css}}><span v-if="ind != (color.length - 1)">,</span></span></td>
-                                        </tr>
+                                            <td v-bind:class="colors['price'].map( (obj, index) => { if(index == 0){return '{' + obj.css} else if(colors['price'].length-1 == index){return obj.css + '}'} else{return obj.css} } ).join(', ')">{{colors['price'].map( (obj, index) => { if(index == 0){return '{' + obj.css} else if(colors['price'].length-1 == index){return obj.css + '}'} else{return obj.css} } ).join(', ')}}</td>
                                     </tbody>
                                 </table>
                             </div>-->
@@ -230,6 +225,12 @@
                         </span>
                     </a>
                     <div v-show="showFilter" class="row">
+                        <!--<div v-for="filter in filterArray" class="col">
+                            <label>{{filter.label}}</label>
+                            <select v-on:input="filter.range = $event.target.value" class="form-select">
+                                <option :array="filter.array" v-for="item in array" v-bind:value="item.value" :selected="item.value == filter.range">{{item.label}}</option>
+                            </select>
+                        </div>-->
                         <div class="col">
                             <label>Minimum Volume</label>
                             <select v-on:input="minVolume = $event.target.value" class="form-select">
@@ -342,7 +343,8 @@
                                 </td>
 
                                 <!-- PRICE -->
-                                <td v-bind:class="{'green1': (snapshot.updatePrice>=2 && snapshot.updatePrice<2.5) || (snapshot.updatePrice>=10 && snapshot.updatePrice<12), 'green2': (snapshot.updatePrice>=2.5 && snapshot.updatePrice<3) || (snapshot.updatePrice>=9 && snapshot.updatePrice<10), 'green3': (snapshot.updatePrice>=3.5 && snapshot.updatePrice<4) || (snapshot.updatePrice>=8 && snapshot.updatePrice<9), 'green4': snapshot.updatePrice>=4 && snapshot.updatePrice<8, 'red': snapshot.updatePrice<2}">{{snapshot.updatePrice}}</td>
+                                <!--<td v-bind:class="colors['price'].map( (obj, index) => { if(index == 0){return '{' + obj.css} else if(colors['price'].length-1 == index){return obj.css + '}'} else{return obj.css} } ).join(', ')">{{snapshot.updatePrice}}</td>-->
+                                <td class="{'green1': (snapshot.updatePrice>=2 && snapshot.updatePrice<2.5) || (snapshot.updatePrice>=10 && snapshot.updatePrice<12), 'green2': (snapshot.updatePrice>=2.5 && snapshot.updatePrice<3) || (snapshot.updatePrice>=9 && snapshot.updatePrice<10), 'green3': (snapshot.updatePrice>=3.5 && snapshot.updatePrice<4) || (snapshot.updatePrice>=8 && snapshot.updatePrice<9), 'green4': snapshot.updatePrice>=4 && snapshot.updatePrice<8, 'red': snapshot.updatePrice<2}">{{snapshot.updatePrice}}</td>
 
                                 <!-- VOLUME -->
                                 <td v-bind:class="{'green1': (snapshot.volume>=1500000 && snapshot.volume<3000000), 'green2': (snapshot.volume>=3000000 && snapshot.volume<5000000), 'green3': (snapshot.volume>=5000000 && snapshot.volume<10000000), 'green4': snapshot.volume>=10000000, 'red': snapshot.volume<1500000}">
@@ -413,8 +415,35 @@
                     return {
                         showAlert: false,
                         showInfo: false,
-                        showSettings: false,
+                        showSettings: true,
                         showFilter: true,
+                        filterArray: [
+                            {
+                                label: "Minimum Volume",
+                                range: "minVol",
+                                array: "minVolumeArray"
+                            }, {
+                                label: "Minimum price",
+                                range: "minPrice",
+                                array: "priceArray"
+                            }, {
+                                label: "Maximum price",
+                                range: "maxPrice",
+                                array: "priceArray"
+                            }, {
+                                label: "Min Price Chge(¢)",
+                                range: "minPriceDiff",
+                                array: "minPriceDiffArray"
+                            }, {
+                                label: "Min Price Chge(%)",
+                                range: "minPricePc",
+                                array: "minPricePcArray"
+                            }, {
+                                label: "Min Volume Chge(%)",
+                                range: "minVolPc",
+                                array: "minVolPcArray"
+                            }
+                        ], 
                         highLowArray: [
                             {
                                 value: ">",
@@ -480,20 +509,20 @@
                             price: [
                                 {
                                     color: "green1",
-                                    desc: "(price>=2 && price<2.5) || (price>=10 && price<12)",
-                                    css: "'green1': (snapshot.updatePrice>=2 && snapshot.updatePrice<2.5) || (snapshot.updatePrice>=10 && snapshot.updatePrice<12)"
+                                    desc: "(price>=2 AND price<2.5) OR (price>=10 && price<12)",
+                                    css: "'green1': (snapshot.updatePrice>=2 AND snapshot.updatePrice<2.5) OR (snapshot.updatePrice>=10 AND snapshot.updatePrice<12)"
                                 }, {
                                     color: "green2",
-                                    desc: "(price>=2.5 && price<3) || (price>=9 && price<10)",
-                                    css: "'green2': (snapshot.updatePrice>=2.5 && snapshot.updatePrice<3) || (snapshot.updatePrice>=9 && snapshot.updatePrice<10)"
+                                    desc: "(price>=2.5 AND price<3) OR (price>=9 AND price<10)",
+                                    css: "'green2': (snapshot.updatePrice>=2.5 AND snapshot.updatePrice<3) OR (snapshot.updatePrice>=9 AND snapshot.updatePrice<10)"
                                 }, {
                                     color: "green3",
-                                    desc: "(price>=3.5 && price<4) || (price>=8 && price<9)",
-                                    css: "'green3': (snapshot.updatePrice>=3.5 && snapshot.updatePrice<4) || (snapshot.updatePrice>=8 && snapshot.updatePrice<9)"
+                                    desc: "(price>=3.5 AND price<4) OR (price>=8 AND price<9)",
+                                    css: "'green3': (snapshot.updatePrice>=3.5 AND snapshot.updatePrice<4) OR (snapshot.updatePrice>=8 AND snapshot.updatePrice<9)"
                                 }, {
                                     color: "green4",
-                                    desc: "price>=4 && price<8",
-                                    css: "'green4': snapshot.updatePrice>=4 && snapshot.updatePrice<8"
+                                    desc: "price>=4 AND price<8",
+                                    css: "'green4': snapshot.updatePrice>=4 AND snapshot.updatePrice<8"
                                 }, {
                                     color: "red",
                                     desc: "price<2",
@@ -504,15 +533,15 @@
                                 {
                                     color: "green1",
                                     desc: "",
-                                    css: "'green1': (snapshot.volume>=1500000 && snapshot.volume<3000000)"
+                                    css: "'green1': (snapshot.volume>=1500000 AND snapshot.volume<3000000)"
                                 }, {
                                     color: "green2",
                                     desc: "",
-                                    css: "'green2': (snapshot.volume>=3000000 && snapshot.volume<5000000)"
+                                    css: "'green2': (snapshot.volume>=3000000 AND snapshot.volume<5000000)"
                                 }, {
                                     color: "green3",
                                     desc: "",
-                                    css: "'green3': (snapshot.volume>=5000000 && snapshot.volume<10000000)"
+                                    css: "'green3': (snapshot.volume>=5000000 AND snapshot.volume<10000000)"
                                 }, {
                                     color: "green4",
                                     desc: "",
