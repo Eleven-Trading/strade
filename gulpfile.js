@@ -59,22 +59,21 @@ function mediasFunction() {
 };
 
 function scriptsFunction() {
-    return gulp.src(paths.scriptsPath.src, { allowEmpty: true })
-        //.pipe(errorHandler())
-        //.pipe(changed(paths.scriptsPath.dest))
-        .pipe(gulp.dest(paths.scriptsPath.dest))
-        .pipe(browserSync.stream());
-};
-
-function viewsFunction() {
     var FMP_API_KEY, i = process.argv.indexOf("--FMP_API_KEY");
     if (i > -1) {
         FMP_API_KEY = process.argv[i + 1];
         //console.log("FMP_API_KEY is "+FMP_API_KEY)
     }
+    return gulp.src(paths.scriptsPath.src, { allowEmpty: true })
+        .pipe(replace('FMP_API_KEY', FMP_API_KEY))
+        .pipe(gulp.dest(paths.scriptsPath.dest))
+        .pipe(browserSync.stream());
+};
+
+function viewsFunction() {
+    
     return gulp.src(paths.viewsPath.src, { allowEmpty: true })
         //.pipe(changed(paths.viewsPath.dest))
-        .pipe(replace('FMP_API_KEY', FMP_API_KEY))
         .pipe(gulp.dest(paths.viewsPath.dest))
         .pipe(browserSync.stream());
 };

@@ -16,9 +16,17 @@
     color: white;
 }
 
+.fa.green1{
+    color: #32de84 !important; 
+}
+
 .green2{
     background-color: #00AB66 !important; 
     color: white;
+}
+
+.fa.green2{
+    color: #00AB66 !important; 
 }
 
 .green3{
@@ -26,17 +34,34 @@
     color: white;
 }
 
+.fa.green3{
+    color: #006241 !important; 
+}
+
 .green4{
     background-color: #004526 !important; 
     color: white;
 }
+
+.fa.green4{
+    color: #004526 !important; 
+}
+
+.redLight{
+    background-color: #ffa0a0 !important; 
+}
+
+.fa.redLight{
+    color: #ffa0a0 !important; 
+}
+
 .red{
     background-color: #ff3333 !important; 
     color: white;
 }
 
-.redLight{
-    background-color: #ffa0a0 !important; 
+.fa.red{
+    color: #ff3333 !important; 
 }
 
 .starGreen {
