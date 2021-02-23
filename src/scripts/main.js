@@ -586,26 +586,38 @@ const vueApp = new Vue({
                 //"{'green1': (snapshot.updatePrice>=2 && snapshot.updatePrice<2.5) || (snapshot.updatePrice>=10 && snapshot.updatePrice<12), 'green2': (snapshot.updatePrice>=2.5 && snapshot.updatePrice<3) || (snapshot.updatePrice>=9 && snapshot.updatePrice<10), 'green3': (snapshot.updatePrice>=3.5 && snapshot.updatePrice<4) || (snapshot.updatePrice>=8 && snapshot.updatePrice<9), 'green4': snapshot.updatePrice>=4 && snapshot.updatePrice<8, 'red': snapshot.updatePrice<2}"
 
             if (this.colorsType == "price") {
-                snap = "updatePrice"
+                var element = "updateItem.price"
             }
             if (this.colorsType == "volume") {
-                snap = "volume"
+                var element = "updateItem.volume"
+            }
+            if (this.colorsType == "float") {
+                var element = "float"
+            }
+            if (this.colorsType == "priceChange") {
+                var element = "priceDiff"
+            }
+            if (this.colorsType == "priceChangePc") {
+                var element = "pricePc"
+            }
+            if (this.colorsType == "volumeChangePc") {
+                var element = "volumePc"
             }
 
             if (this.colorsValue1 != null) {
-                var tempCss = "'" + this.colorsColor + "': (snapshot." + snap + " " + this.colorsHighLow1 + " " + this.colorsValue1 + ")"
+                var tempCss = "'" + this.colorsColor + "': (" + element + " " + this.colorsHighLow1 + " " + this.colorsValue1 + ")"
             }
 
             if (this.colorsValue2 != null) {
-                var tempCss = "'" + this.colorsColor + "': (snapshot." + snap + " " + this.colorsHighLow1 + " " + this.colorsValue1 + " " + this.andOr1 + " snapshot." + snap + " " + this.colorsHighLow2 + " " + this.colorsValue2 + ")"
+                var tempCss = "'" + this.colorsColor + "': (" + element + " " + this.colorsHighLow1 + " " + this.colorsValue1 + " " + this.andOr1 + " " + element + " " + this.colorsHighLow2 + " " + this.colorsValue2 + ")"
             }
 
             if (this.colorsValue3 != null) {
-                var tempCss = "'" + this.colorsColor + "': (snapshot." + snap + " " + this.colorsHighLow1 + " " + this.colorsValue1 + " " + this.andOr1 + " snapshot." + snap + " " + this.colorsHighLow2 + " " + this.colorsValue2 + ") " + this.andOr2 + " (snapshot." + snap + " " + this.colorsHighLow3 + " " + this.colorsValue3 + ")"
+                var tempCss = "'" + this.colorsColor + "': (" + element + " " + this.colorsHighLow1 + " " + this.colorsValue1 + " " + this.andOr1 + " " + element + " " + this.colorsHighLow2 + " " + this.colorsValue2 + ") " + this.andOr2 + " (" + element + " " + this.colorsHighLow3 + " " + this.colorsValue3 + ")"
             }
 
             if (this.colorsValue4 != null) {
-                var tempCss = "'" + this.colorsColor + "': (snapshot." + snap + " " + this.colorsHighLow1 + " " + this.colorsValue1 + " " + this.andOr1 + " snapshot." + snap + " " + this.colorsHighLow2 + " " + this.colorsValue2 + ") " + this.andOr2 + " (snapshot." + snap + " " + this.colorsHighLow3 + " " + this.colorsValue3 + " " + this.andOr3 + " snapshot." + snap + " " + this.colorsHighLow4 + " " + this.colorsValue4 + ")"
+                var tempCss = "'" + this.colorsColor + "': (" + element + " " + this.colorsHighLow1 + " " + this.colorsValue1 + " " + this.andOr1 + " " + element + " " + this.colorsHighLow2 + " " + this.colorsValue2 + ") " + this.andOr2 + " (" + element + " " + this.colorsHighLow3 + " " + this.colorsValue3 + " " + this.andOr3 + " " + element + " " + this.colorsHighLow4 + " " + this.colorsValue4 + ")"
             }
 
             //Check if color alredy exists.

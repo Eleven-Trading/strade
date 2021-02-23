@@ -84,11 +84,10 @@
                             </div>
                         </div>
 
-                        <!-- setting 2: colors -->
-                        <div class="row">
+                        <!-- setting 2: colors 
                             <form @submit.prevent="addColors" class="row g-3 align-items-center">
                                 <h6>Colors</h6>
-                                <!-- IF -->
+                                <!-- IF 
                                 <div class="row mb-1">
                                     <div class="col-3">
                                         <select v-model="colorsType" class="form-select" aria-label="Default select example">
@@ -113,7 +112,7 @@
                                         <i @click="showAndOr1 = true" class="fa fa-plus-circle"></i>
                                     </div>
 
-                                    <!-- THEN -->
+                                    <!-- THEN
 
                                     <div class="col-3">
                                         <select v-model="colorsColor" class="form-select">
@@ -126,7 +125,7 @@
                                         <button type="submit" class="btn btn-outline-success">ADD</button>
                                     </div>
                                 </div>
-                                <!-- AND/OR 1 -->
+                                <!-- AND/OR 1
                                 <div v-show="showAndOr1" class="row mb-1">
                                     <div class="col-2 offset-1">
                                         <select v-model="andOr1" class="form-select">
@@ -147,7 +146,7 @@
                                     </div>
                                 </div>
 
-                                <!-- AND/OR 2 -->
+                                <!-- AND/OR 2 
                                 <div v-show="showAndOr2" class="row mb-1">
                                     <div class="col-2 offset-1">
                                         <select v-model="andOr2" class="form-select">
@@ -168,7 +167,7 @@
                                     </div>
                                 </div>
 
-                                <!-- AND/OR 3 -->
+                                <!-- AND/OR 3
                                 <div v-show="showAndOr3" class="row mb-1">
                                     <div class="col-2 offset-1">
                                         <select v-model="andOr3" class="form-select">
@@ -204,13 +203,13 @@
                             </div>-->
                         </div>
                         <!-- end colors settings -->
-                        <!-- Existing colors -->
+                        <!-- Existing colors 
                         <div class="row">
                             <div v-for="(color, index) in colors" class="col-auto">
                                 <span>{{index}}</span>
                                 <i class="fa fa-info-circle" @click="colorModal = index" data-bs-toggle="modal" data-bs-target="#colorModal"></i>
                             </div>
-                        </div>
+                        </div>-->
                         <!-- Color modal -->
                         <div class="modal fade" id="colorModal" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog">
@@ -365,18 +364,13 @@
                                 </td>
 
                                 <!-- PRICE -->
-                                <!--<td v-bind:class="colors['price'].map( (obj, index) => { if(index == 0){return '{' + obj.css} else if(colors['price'].length-1 == index){return obj.css + '}'} else{return obj.css} } ).join(', ')">{{snapshot.updatePrice}}</td>-->
                                 <td v-bind:class="snapshot.price_color">{{snapshot.updatePrice}}</td>
 
                                 <!-- VOLUME -->
-                                <!--<td v-bind:class="{'green1': (snapshot.volume>=1500000 && snapshot.volume<3000000), 'green2': (snapshot.volume>=3000000 && snapshot.volume<5000000), 'green3': (snapshot.volume>=5000000 && snapshot.volume<10000000), 'green4': snapshot.volume>=10000000, 'red': snapshot.volume<1500000}">
-                                    <span v-if="snapshot.volume<1000000">{{Math.ceil(snapshot.volume/1000)}}k</span><span v-else>{{parseFloat(snapshot.volume/1000000).toFixed(1)}}M</span></td>-->
                                 <td v-bind:class="snapshot.volume_color">
                                     <span v-if="snapshot.volume<1000000">{{Math.ceil(snapshot.volume/1000)}}k</span><span v-else>{{parseFloat(snapshot.volume/1000000).toFixed(1)}}M</span></td>
 
                                 <!-- FLOAT -->
-                                <!--<td v-bind:class="{'green1': (snapshot.float>=20000000 && snapshot.float<30000000) || (snapshot.float>=100000000 && snapshot.float<120000000), 'green2': (snapshot.float>=30000000 && snapshot.float<40000000) || (snapshot.float>=90000000 && snapshot.float<100000000), 'green3': (snapshot.float>=40000000 && snapshot.float<60000000) || (snapshot.float>=80000000 && snapshot.float<90000000), 'green4': snapshot.float>=60000000 && snapshot.float<80000000, 'red': snapshot.float<20000000}">
-                                    <span v-if="snapshot.float<1000000">{{Math.ceil(snapshot.float/1000)}}k</span><span v-else>{{parseFloat(snapshot.float/1000000).toFixed(1)}}M</span></td>-->
                                 <td v-bind:class="snapshot.float_color">
                                     <span v-if="snapshot.float<1000000">{{Math.ceil(snapshot.float/1000)}}k</span><span v-else>{{parseFloat(snapshot.float/1000000).toFixed(1)}}M</span></td>
 
@@ -384,15 +378,12 @@
                                 <td v-bind:class="{'green1': snapshot.floatRatio>=0.5 && snapshot.floatRatio<1, 'green2': snapshot.floatRatio>=1 && snapshot.floatRatio<1.5, 'green3': snapshot.floatRatio>=1.5 && snapshot.floatRatio<2, 'green4': snapshot.floatRatio>=2}">{{snapshot.floatRatio}}</td>-->
 
                                 <!-- PRICE CHANGE -->
-                                <!--<td v-bind:class="{'green1': snapshot.priceIncrease>=0.075 && snapshot.priceIncrease<0.10, 'green2': snapshot.priceIncrease>=0.10 && snapshot.priceIncrease<0.15, 'green3': snapshot.priceIncrease>=0.15 && snapshot.priceIncrease<0.20, 'green4': snapshot.priceIncrease>=0.20}">{{snapshot.priceIncrease}}$</td>-->
                                 <td v-bind:class="snapshot.priceChange_color">{{snapshot.priceIncrease}}$</td>
 
                                 <!-- PRICE CHANGE % -->
-                                <!--<td v-bind:class="{'green1': snapshot.priceIncreasePc>=1 && snapshot.priceIncrease<2, 'green2': snapshot.priceIncreasePc>=2 && snapshot.priceIncrease<3, 'green3': snapshot.priceIncreasePc>=3 && snapshot.priceIncrease<4, 'green4': snapshot.priceIncreasePc>=4}">{{snapshot.priceIncreasePc}}%</td>-->
                                 <td v-bind:class="snapshot.priceChangePc_color">{{snapshot.priceIncreasePc}}%</td>
 
                                 <!-- VOLUME CHANGE % -->
-                                <!--<td v-bind:class="{'green1': snapshot.volumeChange>=2 && snapshot.volumeChange<5, 'green2': snapshot.volumeChange>=5 && snapshot.volumeChange<7.5, 'green3': snapshot.volumeChange>=7.5 && snapshot.volumeChange<10, 'green4': snapshot.volumeChange>=10, 'red': snapshot.volumeChange<0}">{{snapshot.volumeChange}}%</td>-->
                                 <td v-bind:class="snapshot.volumeChangePc_color">{{snapshot.volumeChange}}%</td>
 
                                 <!-- UNFOLLOW -->
