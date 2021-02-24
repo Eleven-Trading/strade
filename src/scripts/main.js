@@ -5,7 +5,10 @@ const vueApp = new Vue({
 
     data() {
         return {
-            FMP_API: "FMP_API_KEY",
+            loggedInn: false,
+            oktaBaseUrl: "OKTA_BASE_URL",
+            oktaClientId: "OKTA_CLIENT_ID",
+            FMP_API: null,
             tickerListSettings: {
                 marketCapLowerThan: 2000000000,
                 volumeLessThan: 500000000,
@@ -475,73 +478,80 @@ const vueApp = new Vue({
      *
      ***********************/
     mounted: async function() {
-        /*
-         *1. Avoid annoying speechsynthesis error and alert that speech is activated. Remember that user needs to interact with the screen. A better option is to make an alert to make sure user interacts with page on load.
-         */
-        speechFunction = () => {
-            var msg = new SpeechSynthesisUtterance();
-            var voices = speechSynthesis.getVoices();
-            msg.voice = voices[this.voice];
-            msg.rate = 0.9; // From 0.1 to 10
-            msg.lang = 'en';
-            msg.volume = this.voiceVolume
-            msg.text = "Speech is activated";
-            window
-                .speechSynthesis
-                .speak(msg);
-        }
-        await speechFunction()
+        /* OKTA */
+        console.log("log status " + this.loggedInn)
+        await this.oktaLogin()
+        console.log("log status " + this.loggedInn)
 
-        /*
-         *2. Getting JSON with symbols and share float
-         */
-        this.getFloatTickers()
+        if (this.loggedInn == true) {
+            /*
+             *1. Avoid annoying speechsynthesis error and alert that speech is activated. Remember that user needs to interact with the screen. A better option is to make an alert to make sure user interacts with page on load.
+             */
+            speechFunction = () => {
+                var msg = new SpeechSynthesisUtterance();
+                var voices = speechSynthesis.getVoices();
+                msg.voice = voices[this.voice];
+                msg.rate = 0.9; // From 0.1 to 10
+                msg.lang = 'en';
+                msg.volume = this.voiceVolume
+                msg.text = "Speech is activated";
+                window
+                    .speechSynthesis
+                    .speak(msg);
+            }
+            await speechFunction()
 
-        /*
-         *3. Get list of tickers to observer
-         */
-        const a = await this.getTickerList()
-        this.tickerArray = a.tickerArray
-        if (Array.isArray(a.error) && a.error.length) {
-            this.alertMessage = a.error
-            this.showAlert = true
-        }
+            /*
+             *2. Getting JSON with symbols and share float
+             */
+            this.getFloatTickers()
 
-        /*
-         *4. Compare ticker list to one minute and second values (making sure not to overlap each other => start at full minute and setTimeout for sec update, 8 seconds later)
-         */
-        await this.startIntervals()
+            /*
+             *3. Get list of tickers to observer
+             */
+            const a = await this.getTickerList()
+            this.tickerArray = a.tickerArray
+            if (Array.isArray(a.error) && a.error.length) {
+                this.alertMessage = a.error
+                this.showAlert = true
+            }
 
-        /*
-         *5. Other
-         */
+            /*
+             *4. Compare ticker list to one minute and second values (making sure not to overlap each other => start at full minute and setTimeout for sec update, 8 seconds later)
+             */
+            await this.startIntervals()
 
-        // UNFOLLOW TICKER
-        this.unfollowTicker()
+            /*
+             *5. Other
+             */
 
-        // FOLLOW TICKER
-        this.followTicker()
+            // UNFOLLOW TICKER
+            this.unfollowTicker()
 
-        // TICKER ALERT
-        this.tickerAlert()
+            // FOLLOW TICKER
+            this.followTicker()
 
-        var tooltipTriggerList = []
-            .slice
-            .call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        })
+            // TICKER ALERT
+            this.tickerAlert()
 
-        /*for(element in this.colors) {
-            console.log("element "+element)
-            this.colors[element].forEach(el => {
-                console.log("el js "+el.js)
-                if(eval(element.js)){
-                    console.log('css '+el.color)
-                }
-                
+            var tooltipTriggerList = []
+                .slice
+                .call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
             })
-        }*/
+
+            /*for(element in this.colors) {
+                console.log("element "+element)
+                this.colors[element].forEach(el => {
+                    console.log("el js "+el.js)
+                    if(eval(element.js)){
+                        console.log('css '+el.color)
+                    }
+                    
+                })
+            }*/
+        }
 
     },
 
@@ -581,6 +591,55 @@ const vueApp = new Vue({
     },
 
     methods: {
+        oktaLogin() {
+            console.log("url "+window.location.href)
+            let oktaSignIn = new OktaSignIn({
+                baseUrl: this.oktaBaseUrl,
+                clientId: this.oktaClientId,
+                redirectUri: window.location.href,
+                authParams: {
+                    issuer: this.oktaBaseUrl+"/oauth2/default"
+                }
+            });
+            return new Promise((resolve) => {
+                oktaSignIn.authClient.token.getUserInfo().then((user) => {
+                    //Is logged
+                    this.FMP_API = user.fmp_api
+                    document.getElementById("logout").style.display = 'block';
+                    this.loggedInn = true
+                    resolve()
+                }, function(error) {
+                    oktaSignIn.showSignInToGetTokens({
+                        el: '#okta-login-container'
+                    }).then(function(tokens) {
+                        //Create loggin
+                        oktaSignIn.authClient.tokenManager.setTokens(tokens);
+                        oktaSignIn.remove();
+                        location.reload();
+                        resolve()
+
+                    }).catch(function(err) {
+                        console.error(err);
+                        resolve()
+                    });
+                })
+            })
+        },
+
+        oktaLogout() {
+            let oktaSignIn = new OktaSignIn({
+                baseUrl: "https://dev-24207013.okta.com",
+                clientId: "0oa8zkluj067EKkF85d6",
+                redirectUri: 'http://localhost:3000',
+                authParams: {
+                    issuer: "https://dev-24207013.okta.com/oauth2/default"
+                }
+            });
+
+            oktaSignIn.authClient.signOut();
+            this.loggedInn = true
+            location.reload();
+        },
         clearLocalStorage() {
             localStorage.clear()
             location.reload();

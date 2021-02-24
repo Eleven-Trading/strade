@@ -59,13 +59,20 @@ function mediasFunction() {
 };
 
 function scriptsFunction() {
-    var FMP_API_KEY, i = process.argv.indexOf("--FMP_API_KEY");
+    var OKTA_BASE_URL, i = process.argv.indexOf("--OKTA_BASE_URL");
     if (i > -1) {
-        FMP_API_KEY = process.argv[i + 1];
-        //console.log("FMP_API_KEY is "+FMP_API_KEY)
+        OKTA_BASE_URL = process.argv[i + 1];
+        //console.log("OKTA_BASE_URL is "+OKTA_BASE_URL)
+    }
+    
+    var OKTA_CLIENT_ID, i = process.argv.indexOf("--OKTA_CLIENT_ID");
+    if (i > -1) {
+        OKTA_CLIENT_ID = process.argv[i + 1];
+        //console.log("OKTA_CLIENT_ID is "+OKTA_CLIENT_ID)
     }
     return gulp.src(paths.scriptsPath.src, { allowEmpty: true })
-        .pipe(replace('FMP_API_KEY', FMP_API_KEY))
+        .pipe(replace('OKTA_BASE_URL', OKTA_BASE_URL))
+        .pipe(replace('OKTA_CLIENT_ID', OKTA_CLIENT_ID))
         .pipe(gulp.dest(paths.scriptsPath.dest))
         .pipe(browserSync.stream());
 };

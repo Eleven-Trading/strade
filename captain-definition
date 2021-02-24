@@ -8,8 +8,9 @@
                         "WORKDIR /usr/share/nginx/html/tmp/",
                         "ADD . .", 
                         "RUN npm install",
-                        "ARG FMP_API_KEY=${FMP_API_KEY}",
-                        "RUN gulp prod --FMP_API_KEY $FMP_API_KEY",
+                        "ARG OKTA_BASE_URL=${OKTA_BASE_URL}",
+                        "ARG OKTA_CLIENT_ID=${OKTA_CLIENT_ID}",
+                        "RUN gulp prod --OKTA_BASE_URL $OKTA_BASE_URL --OKTA_CLIENT_ID $OKTA_CLIENT_ID",
                         "RUN cp -R /usr/share/nginx/html/tmp/dist/* /usr/share/nginx/html/",
                         "WORKDIR /usr/share/nginx/html/",
                         "RUN rm -r /usr/share/nginx/html/tmp"
