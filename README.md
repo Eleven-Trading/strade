@@ -23,7 +23,8 @@ Trade Ideas is a great and very powerful stock scanner. However, I thought it wa
 ### Prerequisites
 #### Software and tools
 - Gulp for building the project
-- Financial Modeling Prep account and API access (https://financialmodelingprep.com).
+- Financial Modeling Prep account and API access (https://financialmodelingprep.com)
+- Okta developer api and user (https://okta.com)
 
 ### Installation
 
