@@ -5,6 +5,12 @@ const vueApp = new Vue({
 
     data() {
         return {
+            FMP_API: "FMP_API_KEY",
+            tickerListSettings: {
+                marketCapLowerThan: 2000000000,
+                volumeLessThan: 500000000,
+                exchange: "NYSE,NASDAQ,amex"
+            },
             showAlert: false,
             showInfo: false,
             showSettings: false,
@@ -213,7 +219,6 @@ const vueApp = new Vue({
             showExclTickers: true,
             alertMessage: null,
             infoMessage: null,
-            FMP_API: "FMP_API_KEY",
             items: null,
             sound: true,
             voice: 49,
@@ -495,7 +500,7 @@ const vueApp = new Vue({
         /*
          *3. Get list of tickers to observer
          */
-        const a = await this.getTickerList(this.FMP_API)
+        const a = await this.getTickerList()
         this.tickerArray = a.tickerArray
         if (Array.isArray(a.error) && a.error.length) {
             this.alertMessage = a.error
@@ -784,18 +789,18 @@ const vueApp = new Vue({
         },
 
         //GET TICKER LIST
-        getTickerList(param) {
+        getTickerList() {
             console.log("GETTING TICKER LIST ")
-            return new Promise(function(resolve) {
+            return new Promise((resolve) => {
                 var error = []
                 url = "https://financialmodelingprep.com/api/v3/stock-screener"
                 axios
                     .get(url, {
                         params: {
-                            marketCapLowerThan: 2000000000,
-                            volumeLessThan: 500000000,
-                            exchange: 'NYSE,NASDAQ,amex',
-                            apikey: param
+                            marketCapLowerThan: this.tickerListSettings.marketCapLowerThan,
+                            volumeLessThan: this.tickerListSettings.volumeLessThan,
+                            exchange: this.tickerListSettings.exchange,
+                            apikey: this.FMP_API
                         }
                     })
                     .then(response => {
@@ -844,40 +849,30 @@ const vueApp = new Vue({
                 console.log("it's the first full minute")
                 this.getSnapshot("oneMin")
 
-                //1 MINUTE INTERVAL
+                //ONE MINUTE INTERVAL
+                // 1- create function
                 oneMinFunction = () => {
                     this.oneMinInterval = setInterval(() => {
-                        this.gettingOneMinSnapshot = true
-                        if (this.gettingSecSnapshot == false) {
-                            var minuteDate = new Date();
-                            //console.log("it's a new full minute and minutes left to full 05 is " + minuteDate.getMinutes() + " and divided is " + (minuteDate.getMinutes() % 5))
-                            this.getSnapshot("oneMin")
-                        } else {
-                            console.log("Sec Snapshot is running")
-                            clearInterval(this.oneMinInterval)
-                            this.newOneMinInterval = setTimeout(oneMinFunction, 300); // try again in 300 milliseconds
-                        }
+                        this.getSnapshot("oneMin")
                     }, 60 * 1000);
                 }
+
+                // 2- call function
                 oneMinFunction()
 
                 //SECONDS INTERVAL (can be updated via variable)
+                // 1- create function
                 secFunction = () => {
                     console.log("it's the first sec update")
                     this.getSnapshot("secUpdate")
+                        //after the first sec update, which happens after newSecIntervalTimeout seconds, we create a secInterval every secUpdate
                     this.secInterval = setInterval(() => {
-                        this.gettingSecSnapshot = true
-                        if (this.gettingOneMinSnapshot == false) {
-                            this.getSnapshot("secUpdate")
-                        } else {
-                            console.log("OneMin Snapshot is running. Setting new interval")
-                            clearInterval(this.secInterval)
-                            this.newSecInterval = setTimeout(secFunction, (this.secUpdate * this.newSecIntervalTimeout * 1000)); // try again
-                        }
-                        //console.log("it's a new " + this.secUpdate + "second update")
+                        this.getSnapshot("secUpdate")
 
                     }, this.secUpdate * 1000);
                 }
+
+                // 2- call function : we start after newSecIntervalTimeout seconds
                 this.firstSecInterval = setTimeout(secFunction, (this.secUpdate * this.newSecIntervalTimeout * 1000))
 
             }, (60 - date.getSeconds()) * 1000);
@@ -933,10 +928,22 @@ const vueApp = new Vue({
                     nextBatch = maxNumber - i
                 }
 
-                url = "https://financialmodelingprep.com/api/v3/quote/" + this
-                    .tickerArray
-                    .slice(i, (i + nextBatch))
-                    //console.log("URL is " + url)
+                //FMP has a limit of 10 API calls/min. To avoid collision between minute and sec updates, we use different urls
+                if (param == "fiveMin" || param == "oneMin") {
+                    console.log(" -> using min FMP url")
+                    url = "https://fmpcloud.io/api/v3/quote/" + this
+                        .tickerArray
+                        .slice(i, (i + nextBatch))
+                        //console.log("URL is " + url)
+                }
+
+                if (param == "secUpdate") {
+                    console.log(" -> using sec FMP url")
+                    url = "https://financialmodelingprep.com/api/v3/quote/" + this
+                        .tickerArray
+                        .slice(i, (i + nextBatch))
+                }
+
                 axios
                     .get(url, {
                         params: {
@@ -967,7 +974,7 @@ const vueApp = new Vue({
                             if (param == "oneMin") {
                                 //console.log("oneMin iteration " + j )
                                 if (j >= numIterations) { //getting last iteration
-                                    this.gettingOneMinSnapshot = false
+                                    //this.gettingOneMinSnapshot = false
                                 }
                                 this.oneMinSnapshot = [
                                         ...this.oneMinSnapshot,
@@ -983,7 +990,10 @@ const vueApp = new Vue({
                                 .forEach(updateItem => {
 
                                     /*
-                                    /* 1 Check if ticker is in alert array
+                                    /* ------- 1 ------- 
+                                    /*
+                                    /* Check if ticker is in alert array
+                                    /*
                                     */
                                     var elementsIndex = this
                                         .alertArray
@@ -1042,8 +1052,13 @@ const vueApp = new Vue({
                                     }
 
                                     /*
-                                    /* 2. Check if One min snapshot exists and that symbol exists in both one min and sec snapshot
+                                    /* ------- 2 ------- 
+                                    /*
+                                    /* Check if One min snapshot exists and that symbol exists in both one min and sec snapshot
+                                    /*
+                                    /*
                                     */
+
                                     if (!!this.oneMinSnapshot && this.oneMinSnapshot.find(oneMinItem => oneMinItem.symbol === updateItem.symbol) != undefined) {
 
                                         /* Find the whole object of the symbol that matches */
@@ -1143,8 +1158,8 @@ const vueApp = new Vue({
                                     this
                                         .secSnapshot = tempSecArray.concat(this
                                             .secSnapshot)
-                                        //console.log("snap " + JSON.stringify(this.secSnapshot))
-                                    this.gettingSecSnapshot = false
+
+                                    //this.gettingSecSnapshot = false
                                 }
                             }
                             ++j
