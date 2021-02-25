@@ -68,13 +68,13 @@ function scriptsFunction() {
     var OKTA_BASE_URL, i = process.argv.indexOf("--OKTA_BASE_URL");
     if (i > -1) {
         OKTA_BASE_URL = process.argv[i + 1];
-        //console.log("OKTA_BASE_URL is "+OKTA_BASE_URL)
+        console.log("OKTA_BASE_URL is "+OKTA_BASE_URL)
     } else{OKTA_BASE_URL = ''}
     
     var OKTA_CLIENT_ID, i = process.argv.indexOf("--OKTA_CLIENT_ID");
     if (i > -1) {
         OKTA_CLIENT_ID = process.argv[i + 1];
-        ///console.log("OKTA_CLIENT_ID is "+OKTA_CLIENT_ID)
+        console.log("OKTA_CLIENT_ID is "+OKTA_CLIENT_ID)
     } else{OKTA_CLIENT_ID = ''}
 
     return gulp.src(paths.scriptsPath.src, { allowEmpty: true })
