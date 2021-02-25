@@ -46,4 +46,4 @@ Trade Ideas is a great and very powerful stock scanner. However, I thought it wa
 	- And more...
 
 # License
-This project is open sourced under the GNU GPL v3 licence.
+This project is open sourced under the GNU GPL v3 licence
