@@ -345,6 +345,7 @@
                                 <th scope="col">Time</th>
                                 <th scope="col">Symbol</th>
                                 <th scope="col">Price</th>
+                                <th scope="col">Avg50</th>
                                 <th scope="col">Volume</th>
                                 <th scope="col">Float</th>
                                 <!--<th scope="col">Float Ratio</th>-->
@@ -374,6 +375,9 @@
 
                                 <!-- PRICE -->
                                 <td v-bind:class="snapshot.price_color">{{snapshot.updatePrice}}</td>
+                                
+                                <!-- AVERAGE 50 PRICE -->
+                                <td v-bind:class="">{{snapshot.priceAvg50}}</td>
 
                                 <!-- VOLUME -->
                                 <td v-bind:class="snapshot.volume_color">

@@ -1191,6 +1191,7 @@ const vueApp = new Vue({
                                             tempSec.priceIncrease = parseFloat(priceDiff).toFixed(2)
                                             tempSec.priceIncreasePc = parseFloat(pricePc).toFixed(2)
                                             tempSec.volumeChange = parseFloat(volumePc).toFixed(2)
+                                            tempSec.priceAvg50 = parseFloat(updateItem.priceAvg50).toFixed(2)
                                             tempSecArray.push(tempSec)
                                                 /**/
 
