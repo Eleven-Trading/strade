@@ -5,9 +5,11 @@ const vueApp = new Vue({
 
     data() {
         return {
+            oktaApp: false,
             loggedInn: false,
             oktaBaseUrl: "OKTA_BASE_URL",
             oktaClientId: "OKTA_CLIENT_ID",
+            profileUrl: "medias/astronaut.png",
             fmp_api: "FMP_API",
             tickerListSettings: {
                 marketCapLowerThan: 2000000000,
@@ -551,6 +553,7 @@ const vueApp = new Vue({
 
         if ((this.oktaBaseUrl != '' || this.oktaBaseUrl != 'OKTA_BASE_URL') && (this.oktaClientId != '' || this.oktaClientId != 'OKTA_CLIENT_ID')) {
             console.log("LAUNCHING WEBSITE WITH OKTA")
+            this.oktaApp = true
             await this.oktaLogin()
 
             if (this.loggedInn == true) {
@@ -558,6 +561,7 @@ const vueApp = new Vue({
             }
         } else {
             console.log("LAUNCHING WEBSITE WITHOUT OKTA")
+            this.oktaApp = false
             this.loggedInn = true
             mountedFunction()
         }
@@ -601,7 +605,6 @@ const vueApp = new Vue({
 
     methods: {
         oktaLogin() {
-            console.log("url " + window.location.href)
             let oktaSignIn = new OktaSignIn({
                 baseUrl: this.oktaBaseUrl,
                 clientId: this.oktaClientId,
@@ -613,8 +616,9 @@ const vueApp = new Vue({
             return new Promise((resolve) => {
                 oktaSignIn.authClient.token.getUserInfo().then((user) => {
                     //Is logged
+                    //console.log("user "+JSON.stringify(user))
+                    this.profileUrl = user.profileUrl
                     this.fmp_api = user.fmp_api
-                    document.getElementById("logout").style.display = 'block';
                     this.loggedInn = true
                     resolve()
                 }, function(error) {
@@ -637,11 +641,11 @@ const vueApp = new Vue({
 
         oktaLogout() {
             let oktaSignIn = new OktaSignIn({
-                baseUrl: "https://dev-24207013.okta.com",
-                clientId: "0oa8zkluj067EKkF85d6",
-                redirectUri: 'http://localhost:3000',
+                baseUrl: this.oktaBaseUrl,
+                clientId: this.oktaClientId,
+                redirectUri: window.location.href,
                 authParams: {
-                    issuer: "https://dev-24207013.okta.com/oauth2/default"
+                    issuer: this.oktaBaseUrl + "/oauth2/default"
                 }
             });
 
