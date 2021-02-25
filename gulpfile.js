@@ -74,7 +74,7 @@ function scriptsFunction() {
     var OKTA_CLIENT_ID, i = process.argv.indexOf("--OKTA_CLIENT_ID");
     if (i > -1) {
         OKTA_CLIENT_ID = process.argv[i + 1];
-        //console.log("OKTA_CLIENT_ID is "+OKTA_CLIENT_ID)
+        ///console.log("OKTA_CLIENT_ID is "+OKTA_CLIENT_ID)
     } else{OKTA_CLIENT_ID = ''}
 
     return gulp.src(paths.scriptsPath.src, { allowEmpty: true })
