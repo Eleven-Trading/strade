@@ -8,7 +8,7 @@ const vueApp = new Vue({
             loggedInn: false,
             oktaBaseUrl: "OKTA_BASE_URL",
             oktaClientId: "OKTA_CLIENT_ID",
-            FMP_API: null,
+            fmp_api: "FMP_API",
             tickerListSettings: {
                 marketCapLowerThan: 2000000000,
                 volumeLessThan: 500000000,
@@ -478,12 +478,8 @@ const vueApp = new Vue({
      *
      ***********************/
     mounted: async function() {
-        /* OKTA */
-        console.log("log status " + this.loggedInn)
-        await this.oktaLogin()
-        console.log("log status " + this.loggedInn)
-
-        if (this.loggedInn == true) {
+        mountedFunction = async () => {
+            
             /*
              *1. Avoid annoying speechsynthesis error and alert that speech is activated. Remember that user needs to interact with the screen. A better option is to make an alert to make sure user interacts with page on load.
              */
@@ -553,6 +549,19 @@ const vueApp = new Vue({
             }*/
         }
 
+        if ((this.oktaBaseUrl != '' || this.oktaBaseUrl != 'OKTA_BASE_URL') && (this.oktaClientId != '' || this.oktaClientId != 'OKTA_CLIENT_ID')) {
+            console.log("LAUNCHING WEBSITE WITH OKTA")
+            await this.oktaLogin()
+
+            if (this.loggedInn == true) {
+                mountedFunction()
+            }
+        } else {
+            console.log("LAUNCHING WEBSITE WITHOUT OKTA")
+            this.loggedInn = true
+            mountedFunction()
+        }
+
     },
 
     watch: {
@@ -592,19 +601,19 @@ const vueApp = new Vue({
 
     methods: {
         oktaLogin() {
-            console.log("url "+window.location.href)
+            console.log("url " + window.location.href)
             let oktaSignIn = new OktaSignIn({
                 baseUrl: this.oktaBaseUrl,
                 clientId: this.oktaClientId,
                 redirectUri: window.location.href,
                 authParams: {
-                    issuer: this.oktaBaseUrl+"/oauth2/default"
+                    issuer: this.oktaBaseUrl + "/oauth2/default"
                 }
             });
             return new Promise((resolve) => {
                 oktaSignIn.authClient.token.getUserInfo().then((user) => {
                     //Is logged
-                    this.FMP_API = user.fmp_api
+                    this.fmp_api = user.fmp_api
                     document.getElementById("logout").style.display = 'block';
                     this.loggedInn = true
                     resolve()
@@ -859,7 +868,7 @@ const vueApp = new Vue({
                             marketCapLowerThan: this.tickerListSettings.marketCapLowerThan,
                             volumeLessThan: this.tickerListSettings.volumeLessThan,
                             exchange: this.tickerListSettings.exchange,
-                            apikey: this.FMP_API
+                            apikey: this.fmp_api
                         }
                     })
                     .then(response => {
@@ -1006,7 +1015,7 @@ const vueApp = new Vue({
                 axios
                     .get(url, {
                         params: {
-                            apikey: this.FMP_API
+                            apikey: this.fmp_api
                         }
                     })
                     .then(response => {
