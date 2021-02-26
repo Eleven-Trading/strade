@@ -360,97 +360,114 @@
 
                 <!-- MOMO TABLE -->
                 <div class="me-3">
-                    <h3 class="ms-2 me-3 text-blue">MOMO</h3>
-                    <table class="table text-center">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th scope="col">Time</th>
-                                <th scope="col">Symbol</th>
-                                <th scope="col">Price</th>
-                                <th scope="col">Volume</th>
-                                <th scope="col">Float</th>
-                                <!--<th scope="col">Float Ratio</th>-->
-                                <th scope="col">Price Chge</th>
-                                <th scope="col">Price Chge(%)</th>
-                                <th scope="col">Volume Chge(%)</th>
-                                <th scope="col"></th>
-                                <th scope="col"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="snapshot in secSnapshot.slice(0,20)" v-bind:class="[$moment().diff($moment.unix(snapshot.time), 'seconds')>=(secUpdate-1)? 'oldData' : '']">
-                                <!-- If data is older than secupdate minus 1 second, then it's old data -->
-                                <td>{{$moment.unix(snapshot.time).tz("America/New_York").format("hh:mm:ss")}}</td>
+                    <div class="row">
+                        <div class="col-auto">
+                            <h3 class="ms-2 me-3 text-blue">MOMO</h3>
+                        </div>
+                        <div class="col-2">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fa fa-retweet"></i>
+                                </span>
+                                <input type="text" class="form-control" v-bind:value="secCountdown" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <table class="table text-center">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">Time</th>
+                            <th scope="col">Symbol</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Day High</th>
+                            <th scope="col">Volume</th>
+                            <th scope="col">Float</th>
+                            <!--<th scope="col">Float Ratio</th>-->
+                            <th scope="col">Price Chge</th>
+                            <th scope="col">Price Chge(%)</th>
+                            <th scope="col">Volume Chge(%)</th>
+                            <th scope="col"></th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="snapshot in secSnapshot.slice(0,20)" v-bind:class="[$moment().diff($moment.unix(snapshot.time), 'seconds')>=(secUpdate-1)? 'oldData' : '']">
+                            <!-- If data is older than secupdate minus 1 second, then it's old data -->
+                            <td>{{$moment.unix(snapshot.time).tz("America/New_York").format("hh:mm:ss")}}</td>
 
-                                <!-- SYMBOL -->
-                                <td>{{snapshot.symbol}}
-                                    <span v-show="followArray.includes(snapshot.symbol)" class="starGreen">
-                                        <i class="fa fa-star"></i>
+                            <!-- SYMBOL -->
+                            <td>{{snapshot.symbol}}
+                                <span v-show="followArray.includes(snapshot.symbol)" class="starGreen">
+                                    <i class="fa fa-star"></i>
+                                </span>
+                                <span v-if="alertArray.find(element => element.ticker == snapshot.symbol) != undefined">
+                                    <span v-show="alertArray.find(element => element.ticker == snapshot.symbol).alert" class="bellYellow">
+                                        <i class="fa fa-bell"></i>
                                     </span>
-                                    <span v-if="alertArray.find(element => element.ticker == snapshot.symbol) != undefined">
-                                        <span v-show="alertArray.find(element => element.ticker == snapshot.symbol).alert" class="bellYellow">
-                                            <i class="fa fa-bell"></i>
-                                        </span>
-                                    </span>
-                                </td>
+                                </span>
+                            </td>
 
-                                <!-- PRICE -->
-                                <td v-bind:class="snapshot.price_color">{{snapshot.updatePrice}}</td>
+                            <!-- PRICE -->
+                            <td v-bind:class="snapshot.price_color">{{snapshot.updatePrice}}</td>
 
-                                <!-- VOLUME -->
-                                <td v-bind:class="snapshot.volume_color">
-                                    <span v-if="snapshot.volume<1000000">{{Math.ceil(snapshot.volume/1000)}}k</span><span v-else>{{parseFloat(snapshot.volume/1000000).toFixed(1)}}M</span></td>
+                            <!-- DAY HIGH -->
+                            <td>{{snapshot.dayHigh}} ({{snapshot.dayHighRatio}})</td>
 
-                                <!-- FLOAT -->
-                                <td v-bind:class="snapshot.float_color">
-                                    <span v-if="snapshot.float<1000000">{{Math.ceil(snapshot.float/1000)}}k</span><span v-else>{{parseFloat(snapshot.float/1000000).toFixed(1)}}M</span></td>
+                            <!-- VOLUME -->
+                            <td v-bind:class="snapshot.volume_color">
+                                <span v-if="snapshot.volume<1000000">{{Math.ceil(snapshot.volume/1000)}}k</span><span v-else>{{parseFloat(snapshot.volume/1000000).toFixed(1)}}M</span></td>
 
-                                <!-- FLOAT RATIO
+                            <!-- FLOAT -->
+                            <td v-bind:class="snapshot.float_color">
+                                <span v-if="snapshot.float<1000000">{{Math.ceil(snapshot.float/1000)}}k</span><span v-else>{{parseFloat(snapshot.float/1000000).toFixed(1)}}M</span></td>
+
+                            <!-- FLOAT RATIO
                                 <td v-bind:class="{'green1': snapshot.floatRatio>=0.5 && snapshot.floatRatio<1, 'green2': snapshot.floatRatio>=1 && snapshot.floatRatio<1.5, 'green3': snapshot.floatRatio>=1.5 && snapshot.floatRatio<2, 'green4': snapshot.floatRatio>=2}">{{snapshot.floatRatio}}</td>-->
 
-                                <!-- PRICE CHANGE -->
-                                <td v-bind:class="snapshot.priceChange_color">{{snapshot.priceIncrease}}$</td>
+                            <!-- PRICE CHANGE -->
+                            <td v-bind:class="snapshot.priceChange_color">{{snapshot.priceIncrease}}$</td>
 
-                                <!-- PRICE CHANGE % -->
-                                <td v-bind:class="snapshot.priceChangePc_color">{{snapshot.priceIncreasePc}}%</td>
+                            <!-- PRICE CHANGE % -->
+                            <td v-bind:class="snapshot.priceChangePc_color">{{snapshot.priceIncreasePc}}%</td>
 
-                                <!-- VOLUME CHANGE % -->
-                                <td v-bind:class="snapshot.volumeChangePc_color">{{snapshot.volumeChange}}%</td>
+                            <!-- VOLUME CHANGE % -->
+                            <td v-bind:class="snapshot.volumeChangePc_color">{{snapshot.volumeChange}}%</td>
 
-                                <!-- UNFOLLOW -->
-                                <td v-on:click="addUnFollow(snapshot.symbol)">
-                                    <span class="eyeBlack">
-                                        <i class="fa fa-eye-slash"></i></span></td>
+                            <!-- UNFOLLOW -->
+                            <td v-on:click="addUnFollow(snapshot.symbol)">
+                                <span class="eyeBlack">
+                                    <i class="fa fa-eye-slash"></i></span></td>
 
-                                <!-- FOLLOW -->
-                                <td v-on:click="addFollow(snapshot.symbol)">
-                                    <span class="starGreen">
-                                        <i class="fa fa-star"></i></span></td>
+                            <!-- FOLLOW -->
+                            <td v-on:click="addFollow(snapshot.symbol)">
+                                <span class="starGreen">
+                                    <i class="fa fa-star"></i></span></td>
 
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-        <!--end vue app-->
+    </div>
+    <!--end vue app-->
 
-        <!-- ********************************************************* 
+    <!-- ********************************************************* 
                         *
                         SCRIPTS
                         *
                         ********************************************************* -->
-        <script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.min.js" integrity="sha256-T/f7Sju1ZfNNfBh7skWn0idlCBcI3RwdLSS4/I7NQKQ=" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.min.js" integrity="sha256-T/f7Sju1ZfNNfBh7skWn0idlCBcI3RwdLSS4/I7NQKQ=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script>
 
-        <script src="https://momentjs.com/downloads/moment-timezone-with-data.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/vue-moment-lib@1.2.2/dist/vue-moment-lib.umd.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.20/lodash.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap-tagsinput@latest/dist/bootstrap-tagsinput.min.js"></script>
-        <script src="scripts/main.js"></script>
-    </body>
+    <script src="https://momentjs.com/downloads/moment-timezone-with-data.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-moment-lib@1.2.2/dist/vue-moment-lib.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.20/lodash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-tagsinput@latest/dist/bootstrap-tagsinput.min.js"></script>
+    <script src="scripts/main.js"></script>
+</body>
 </html>
