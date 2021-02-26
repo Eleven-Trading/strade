@@ -1,3 +1,12 @@
+img.navbar-brand{
+    height: 40px;
+}
+
+.profileImg {
+    height: 30px;
+    border-radius: 50%;
+}
+
 .blueIcon{
     color: #0dcaf0;
 }
