@@ -999,9 +999,10 @@ const vueApp = new Vue({
             var i
             var j = 1
             var maxNumber = this.tickerArray.length
-            var maxBatch = 1500
+            var maxBatch = 800
             var numIterations = maxNumber / maxBatch
             var tempSecArray = []
+            var useComURL = true
                 //console.log("Ticker array lenght " + this.tickerArray.length)
             for (i = 0; i < maxNumber; i += maxBatch) {
                 let nextBatch
@@ -1025,7 +1026,20 @@ const vueApp = new Vue({
 
                 if (param == "secUpdate") {
                     console.log(" -> using sec FMP url")
-                    url = "https://financialmodelingprep.com/api/v3/quote/" + this
+                    var urlPrep
+                    
+                    if (useComURL == true){
+                        console.log(" -> .com url")
+                        urlPrep = "https://financialmodelingprep.com/api/v3/quote/"
+                        useComURL = false
+                    }
+                    else {
+                        console.log(" -> .io url")
+                        urlPrep = "https://fmpcloud.io/api/v3/quote/"
+                        useComURL = true
+                    }   
+
+                    url = urlPrep + this
                         .tickerArray
                         .slice(i, (i + nextBatch))
                 }
