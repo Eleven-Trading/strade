@@ -249,6 +249,8 @@ const vueApp = new Vue({
             secInterval: null,
             newOneMinInterval: null,
             newSecInterval: null,
+            secCountdown: null,
+            secCountdownInterval: null,
             gettingOneMinSnapshot: false,
             gettingSecSnapshot: false,
             secUpdate: localStorage.getItem('secUpdate') ? localStorage.getItem('secUpdate') : 10,
@@ -939,12 +941,23 @@ const vueApp = new Vue({
                     this.getSnapshot("secUpdate")
                         //after the first sec update, which happens after newSecIntervalTimeout seconds, we create a secInterval every secUpdate
                     this.secInterval = setInterval(() => {
+                        clearInterval(this.secCountdownInterval)
+                        var secs = 0
+
+                        //console.log('seconds left ' + (this.secUpdate - secs))
+                        this.secCountdown = (this.secUpdate - secs)
+                        this.secCountdownInterval = setInterval(() => {
+                            secs++
+                           // console.log('seconds left ' + (this.secUpdate - secs))
+                           this.secCountdown = (this.secUpdate - secs)
+                        },1000)
+
                         this.getSnapshot("secUpdate")
 
                     }, this.secUpdate * 1000);
                 }
 
-                // 2- call function : we start after newSecIntervalTimeout seconds
+                // 2- call function : we start after 'newSecIntervalTimeout' seconds
                 this.firstSecInterval = setTimeout(secFunction, (this.secUpdate * this.newSecIntervalTimeout * 1000))
 
             }, (60 - date.getSeconds()) * 1000);
@@ -958,6 +971,7 @@ const vueApp = new Vue({
             clearTimeout(this.firstSecInterval)
             clearInterval(this.oneMinInterval)
             clearInterval(this.secInterval)
+            clearInterval(this.secCountdownInterval)
             clearTimeout(this.newOneMinInterval)
             clearTimeout(this.newSecInterval)
         },
@@ -985,9 +999,10 @@ const vueApp = new Vue({
             var i
             var j = 1
             var maxNumber = this.tickerArray.length
-            var maxBatch = 1500
+            var maxBatch = 800
             var numIterations = maxNumber / maxBatch
             var tempSecArray = []
+            var useComURL = true
                 //console.log("Ticker array lenght " + this.tickerArray.length)
             for (i = 0; i < maxNumber; i += maxBatch) {
                 let nextBatch
@@ -1011,7 +1026,20 @@ const vueApp = new Vue({
 
                 if (param == "secUpdate") {
                     console.log(" -> using sec FMP url")
-                    url = "https://financialmodelingprep.com/api/v3/quote/" + this
+                    var urlPrep
+                    
+                    if (useComURL == true){
+                        console.log(" -> .com url")
+                        urlPrep = "https://financialmodelingprep.com/api/v3/quote/"
+                        useComURL = false
+                    }
+                    else {
+                        console.log(" -> .io url")
+                        urlPrep = "https://fmpcloud.io/api/v3/quote/"
+                        useComURL = true
+                    }   
+
+                    url = urlPrep + this
                         .tickerArray
                         .slice(i, (i + nextBatch))
                 }
@@ -1141,6 +1169,7 @@ const vueApp = new Vue({
                                         var priceDiff = updateItem.price - oneMinObject.price
                                         var pricePc = ((updateItem.price - oneMinObject.price) / oneMinObject.price) * 100
                                         var volumePc = ((updateItem.volume - oneMinObject.volume) / oneMinObject.volume) * 100
+                                        var dayHighRatio = updateItem.price/updateItem.dayHigh
                                             //console.log("-> priceDiff "+priceDiff+", volume pc "+volumePc+ "and min vol pc "+this.minVolPc)
 
                                         /* Check if symobol is in unfollow array */
@@ -1195,6 +1224,8 @@ const vueApp = new Vue({
                                             tempSec.priceIncrease = parseFloat(priceDiff).toFixed(2)
                                             tempSec.priceIncreasePc = parseFloat(pricePc).toFixed(2)
                                             tempSec.volumeChange = parseFloat(volumePc).toFixed(2)
+                                            tempSec.dayHigh = parseFloat(updateItem.dayHigh).toFixed(2)
+                                            tempSec.dayHighRatio = parseFloat(dayHighRatio).toFixed(2)
                                             tempSec.priceAvg50 = parseFloat(updateItem.priceAvg50).toFixed(2)
                                             tempSecArray.push(tempSec)
                                                 /**/
