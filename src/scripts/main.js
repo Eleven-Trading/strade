@@ -1003,6 +1003,7 @@ const vueApp = new Vue({
             var numIterations = maxNumber / maxBatch
             var tempSecArray = []
             var useComURL = true
+            var urlPrep
                 //console.log("Ticker array lenght " + this.tickerArray.length)
             for (i = 0; i < maxNumber; i += maxBatch) {
                 let nextBatch
@@ -1014,27 +1015,32 @@ const vueApp = new Vue({
                 } else { // this is last loop
                     nextBatch = maxNumber - i
                 }
-
                 //FMP has a limit of 10 API calls/min. To avoid collision between minute and sec updates, we use different urls
                 if (param == "fiveMin" || param == "oneMin") {
-                    console.log(" -> using min FMP url")
-                    url = "https://fmpcloud.io/api/v3/quote/" + this
+                    if (useComURL == true){
+                        console.log(" -> MinUpdate with .com url")
+                        urlPrep = "https://financialmodelingprep.com/api/v3/quote/"
+                        useComURL = false
+                    }
+                    else {
+                        console.log(" -> MinUpdate with .io url")
+                        urlPrep = "https://fmpcloud.io/api/v3/quote/"
+                        useComURL = true
+                    }   
+                    url = urlPrep + this
                         .tickerArray
                         .slice(i, (i + nextBatch))
                         //console.log("URL is " + url)
                 }
 
                 if (param == "secUpdate") {
-                    console.log(" -> using sec FMP url")
-                    var urlPrep
-                    
                     if (useComURL == true){
-                        console.log(" -> .com url")
+                        console.log(" -> SecUpdate with .com url")
                         urlPrep = "https://financialmodelingprep.com/api/v3/quote/"
                         useComURL = false
                     }
                     else {
-                        console.log(" -> .io url")
+                        console.log(" -> SecUpdate with .io url")
                         urlPrep = "https://fmpcloud.io/api/v3/quote/"
                         useComURL = true
                     }   
