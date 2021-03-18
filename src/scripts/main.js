@@ -482,8 +482,44 @@ const vueApp = new Vue({
      *
      ***********************/
     mounted: async function() {
-        mountedFunction = async () => {
-            
+        mountedFunction = async() => {
+            var ctx = document.getElementById('myChart').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+                    datasets: [{
+                        label: '# of Votes',
+                        data: [12, 19, 3, 5, 2, 3],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
             /*
              *1. Avoid annoying speechsynthesis error and alert that speech is activated. Remember that user needs to interact with the screen. A better option is to make an alert to make sure user interacts with page on load.
              */
@@ -948,9 +984,9 @@ const vueApp = new Vue({
                         this.secCountdown = (this.secUpdate - secs)
                         this.secCountdownInterval = setInterval(() => {
                             secs++
-                           // console.log('seconds left ' + (this.secUpdate - secs))
-                           this.secCountdown = (this.secUpdate - secs)
-                        },1000)
+                            // console.log('seconds left ' + (this.secUpdate - secs))
+                            this.secCountdown = (this.secUpdate - secs)
+                        }, 1000)
 
                         this.getSnapshot("secUpdate")
 
@@ -1017,16 +1053,15 @@ const vueApp = new Vue({
                 }
                 //FMP has a limit of 10 API calls/min. To avoid collision between minute and sec updates, we use different urls
                 if (param == "fiveMin" || param == "oneMin") {
-                    if (useComURL == true){
+                    if (useComURL == true) {
                         console.log(" -> MinUpdate with .com url")
                         urlPrep = "https://financialmodelingprep.com/api/v3/quote/"
                         useComURL = false
-                    }
-                    else {
+                    } else {
                         console.log(" -> MinUpdate with .io url")
                         urlPrep = "https://fmpcloud.io/api/v3/quote/"
                         useComURL = true
-                    }   
+                    }
                     url = urlPrep + this
                         .tickerArray
                         .slice(i, (i + nextBatch))
@@ -1034,16 +1069,15 @@ const vueApp = new Vue({
                 }
 
                 if (param == "secUpdate") {
-                    if (useComURL == true){
-                        console.log(" -> SecUpdate with .com url")
+                    if (useComURL == true) {
+                        //console.log(" -> SecUpdate with .com url")
                         urlPrep = "https://financialmodelingprep.com/api/v3/quote/"
                         useComURL = false
-                    }
-                    else {
-                        console.log(" -> SecUpdate with .io url")
+                    } else {
+                        //console.log(" -> SecUpdate with .io url")
                         urlPrep = "https://fmpcloud.io/api/v3/quote/"
                         useComURL = true
-                    }   
+                    }
 
                     url = urlPrep + this
                         .tickerArray
@@ -1175,7 +1209,7 @@ const vueApp = new Vue({
                                         var priceDiff = updateItem.price - oneMinObject.price
                                         var pricePc = ((updateItem.price - oneMinObject.price) / oneMinObject.price) * 100
                                         var volumePc = ((updateItem.volume - oneMinObject.volume) / oneMinObject.volume) * 100
-                                        var dayHighRatio = updateItem.price/updateItem.dayHigh
+                                        var dayHighRatio = updateItem.price / updateItem.dayHigh
                                             //console.log("-> priceDiff "+priceDiff+", volume pc "+volumePc+ "and min vol pc "+this.minVolPc)
 
                                         /* Check if symobol is in unfollow array */

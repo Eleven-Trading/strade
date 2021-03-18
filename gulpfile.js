@@ -139,7 +139,7 @@ function watch() {
 
 /******** GULP *********/
 var prod = gulp.parallel(cssFunction, iconsFunction, mediasFunction, scriptsFunction, viewsFunction, captainFunction);
-var build = gulp.parallel(prod, browserInit, phpLaunchFunction, watch); //run prod is necessary in case clean has beed done before
+var build = gulp.parallel(prod, browserInit, watch); //run prod is necessary in case clean has beed done before
 
 gulp.task('default', build);
 gulp.task('clean', cleanDist);
