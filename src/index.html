@@ -375,7 +375,6 @@
                         </div>
                     </div>
                 </div>
-                <canvas id="myChart" width="400" height="400"></canvas>
                 <table class="table text-center">
                     <thead class="thead-dark">
                         <tr>
@@ -391,10 +390,11 @@
                             <th scope="col">Volume Chge(%)</th>
                             <th scope="col"></th>
                             <th scope="col"></th>
+                            <th scope="col"></th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="snapshot in secSnapshot.slice(0,20)" v-bind:class="[$moment().diff($moment.unix(snapshot.time), 'seconds')>=(secUpdate-1)? 'oldData' : '']">
+                        <tr v-for="(snapshot, index) in secSnapshot.slice(0,20)" v-bind:class="[$moment().diff($moment.unix(snapshot.time), 'seconds')>=(secUpdate-1)? 'oldData' : '']">
                             <!-- If data is older than secupdate minus 1 second, then it's old data -->
                             <td>{{$moment.unix(snapshot.time).tz("America/New_York").format("hh:mm:ss")}}</td>
 
@@ -446,6 +446,11 @@
                                 <span class="starGreen">
                                     <i class="fa fa-star"></i></span></td>
 
+                            <!-- CHART--
+                            <td>
+                                <div v-bind:id="'chart'+index" v-bind:key="createChart(snapshot.chartData, index)"></div>
+                            </td>-->
+
                         </tr>
                     </tbody>
                 </table>
@@ -471,6 +476,8 @@
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-tagsinput@latest/dist/bootstrap-tagsinput.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@latest/dist/Chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@latest/dayjs.min.js"></script>
     <script src="scripts/main.js"></script>
 </body>
 </html>

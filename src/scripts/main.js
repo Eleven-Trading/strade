@@ -294,7 +294,8 @@ const vueApp = new Vue({
                 label: "2M"
             }],
             maxVolume: 500000000,
-            priceArray: [{
+            priceArray: [],
+            /*priceArray: [{
                 value: 0,
                 label: "0$"
             }, {
@@ -357,7 +358,7 @@ const vueApp = new Vue({
             }, {
                 value: 20,
                 label: "20$"
-            }],
+            }],*/
             minPrice: localStorage.getItem('minPrice') ?
                 localStorage.getItem('minPrice') : 1,
             maxPrice: localStorage.getItem('maxPrice') ?
@@ -474,7 +475,23 @@ const vueApp = new Vue({
      * CREATED
      *
      ***********************/
-    created() {},
+    created() {
+        for (i = 1; i <= 50;) {
+            var temp = {}
+            if (i < 5) {
+                temp.value = i
+                temp.label = i+"$"
+                this.priceArray.push(temp)
+                i += 1
+            } else {
+                temp.value = i
+                temp.label = i+"$"
+                this.priceArray.push(temp)
+                i += 5
+            }
+            //console.log("priceArray "+JSON.stringify(this.priceArray))
+        }
+    },
 
     /***********************
      *
@@ -482,44 +499,8 @@ const vueApp = new Vue({
      *
      ***********************/
     mounted: async function() {
+
         mountedFunction = async() => {
-            var ctx = document.getElementById('myChart').getContext('2d');
-            var myChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-                    datasets: [{
-                        label: '# of Votes',
-                        data: [12, 19, 3, 5, 2, 3],
-                        backgroundColor: [
-                            'rgba(255, 99, 132, 0.2)',
-                            'rgba(54, 162, 235, 0.2)',
-                            'rgba(255, 206, 86, 0.2)',
-                            'rgba(75, 192, 192, 0.2)',
-                            'rgba(153, 102, 255, 0.2)',
-                            'rgba(255, 159, 64, 0.2)'
-                        ],
-                        borderColor: [
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(75, 192, 192, 1)',
-                            'rgba(153, 102, 255, 1)',
-                            'rgba(255, 159, 64, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        yAxes: [{
-                            ticks: {
-                                beginAtZero: true
-                            }
-                        }]
-                    }
-                }
-            });
             /*
              *1. Avoid annoying speechsynthesis error and alert that speech is activated. Remember that user needs to interact with the screen. A better option is to make an alert to make sure user interacts with page on load.
              */
@@ -1012,6 +993,51 @@ const vueApp = new Vue({
             clearTimeout(this.newSecInterval)
         },
 
+        createChart(param1, param2) {
+            var chartData = []
+            var chartId = "chart" + param2
+            console.log("chart id " + chartId)
+
+            param1.forEach(element => {
+                //console.log("date " + new Date(dayjs(element.date)))
+                tempData = {}
+                tempY = []
+                tempY.push(element.open)
+                tempY.push(element.high)
+                tempY.push(element.low)
+                tempY.push(element.close)
+                    //console.log("tempY "+JSON.stringify(tempY))
+                tempData.x = new Date(dayjs(element.date))
+                tempData.y = tempY
+                chartData.push(tempData)
+                    //console.log("tempData "+JSON.stringify(tempData))
+            });
+            var options = {
+                series: [{
+                    data: chartData
+                }],
+                chart: {
+                    type: 'candlestick',
+                    height: 100
+                },
+                title: {
+                    text: 'CandleStick Chart',
+                    align: 'left'
+                },
+                xaxis: {
+                    type: 'datetime'
+                },
+                yaxis: {
+                    tooltip: {
+                        enabled: true
+                    }
+                }
+            };
+
+            //var chart = new ApexCharts(document.querySelector(chartId), options);
+            //chart.render();
+        },
+
         //GET SNAPSHOTS (1 MINUTE AND SECONDS)
         getSnapshot(param) {
             var error = []
@@ -1040,7 +1066,9 @@ const vueApp = new Vue({
             var tempSecArray = []
             var useComURL = true
             var urlPrep
-                //console.log("Ticker array lenght " + this.tickerArray.length)
+
+
+            //console.log("Ticker array lenght " + this.tickerArray.length)
             for (i = 0; i < maxNumber; i += maxBatch) {
                 let nextBatch
                 let url
@@ -1054,11 +1082,11 @@ const vueApp = new Vue({
                 //FMP has a limit of 10 API calls/min. To avoid collision between minute and sec updates, we use different urls
                 if (param == "fiveMin" || param == "oneMin") {
                     if (useComURL == true) {
-                        console.log(" -> MinUpdate with .com url")
+                        //console.log(" -> MinUpdate with .com url")
                         urlPrep = "https://financialmodelingprep.com/api/v3/quote/"
                         useComURL = false
                     } else {
-                        console.log(" -> MinUpdate with .io url")
+                        //console.log(" -> MinUpdate with .io url")
                         urlPrep = "https://fmpcloud.io/api/v3/quote/"
                         useComURL = true
                     }
@@ -1220,6 +1248,7 @@ const vueApp = new Vue({
                                         /* If requirements are met and symbol/ticker is not marked as excluded, include in MOMO table */
                                         if (priceDiff >= this.minPriceDiff && pricePc >= this.minPricePc && volumePc >= this.minVolPc && tickerUnfollow == false) {
                                             console.log(" -> MOMO data")
+
                                             var tempSec = {}
                                                 //console.log("-> priceDiff "+priceDiff+", volume pc "+volumePc+ "and min vol pc "+this.minVolPc)
 
@@ -1267,8 +1296,44 @@ const vueApp = new Vue({
                                             tempSec.dayHigh = parseFloat(updateItem.dayHigh).toFixed(2)
                                             tempSec.dayHighRatio = parseFloat(dayHighRatio).toFixed(2)
                                             tempSec.priceAvg50 = parseFloat(updateItem.priceAvg50).toFixed(2)
+
+                                            /*get histo 1mn data
+                                            if (useComURL == true) {
+                                                console.log(" -> Histo data with .com url")
+                                                urlPrep = "https://financialmodelingprep.com/api/v3/"
+                                                useComURL = false
+                                            } else {
+                                                console.log(" -> Histo data with .io url")
+                                                urlPrep = "https://fmpcloud.io/api/v3/"
+                                                useComURL = true
+                                            }
+
+                                            url = urlPrep + "historical-chart/1min/" + updateItem.symbol
+
+                                            axios
+                                                .get(url, {
+                                                    params: {
+                                                        from: dayjs().format("YYYY-MM-DD"),
+                                                        to: dayjs().format("YYYY-MM-DD"),
+                                                        limit: 10,
+                                                        apikey: this.fmp_api
+                                                    }
+                                                })
+                                                .then(response => {
+                                                    console.log(" -> Getting historic 1mn data")
+                                                        //console.log("history time " + JSON.stringify(response))
+                                                    tempSec.chartData = response.data
+                                                    
+                                                    //console.log("tempSec array : " + JSON.stringify(tempSecArray))
+                                                    //this.createChart(response.data)
+
+                                                }).catch(e => {
+                                                    console.log(" -> History 1mn error " + e)
+                                                })*/
                                             tempSecArray.push(tempSec)
-                                                /**/
+
+                                            /**/
+
 
 
                                         }
