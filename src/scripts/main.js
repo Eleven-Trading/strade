@@ -227,7 +227,7 @@ const vueApp = new Vue({
             items: null,
             sound: true,
             voice: 49,
-            voiceVolume: 0.9,
+            voiceVolume: localStorage.getItem('voiceVolume') ? localStorage.getItem('voiceVolume') : 0.9,
             unfollowArray: localStorage.getItem('unfollowArray') ?
                 localStorage
                 .getItem('unfollowArray')
@@ -294,70 +294,7 @@ const vueApp = new Vue({
                 label: "2M"
             }],
             maxVolume: 500000000,
-            priceArray: [{
-                value: 0,
-                label: "0$"
-            }, {
-                value: 1,
-                label: "1$"
-            }, {
-                value: 2,
-                label: "2$"
-            }, {
-                value: 3,
-                label: "3$"
-            }, {
-                value: 4,
-                label: "4$"
-            }, {
-                value: 5,
-                label: "5$"
-            }, {
-                value: 6,
-                label: "6$"
-            }, {
-                value: 7,
-                label: "7$"
-            }, {
-                value: 8,
-                label: "8$"
-            }, {
-                value: 9,
-                label: "9$"
-            }, {
-                value: 10,
-                label: "10$"
-            }, {
-                value: 11,
-                label: "11$"
-            }, {
-                value: 12,
-                label: "12$"
-            }, {
-                value: 13,
-                label: "13$"
-            }, {
-                value: 14,
-                label: "14$"
-            }, {
-                value: 15,
-                label: "15$"
-            }, {
-                value: 16,
-                label: "16$"
-            }, {
-                value: 17,
-                label: "17$"
-            }, {
-                value: 18,
-                label: "18$"
-            }, {
-                value: 19,
-                label: "19$"
-            }, {
-                value: 20,
-                label: "20$"
-            }],
+            priceArray: [],
             minPrice: localStorage.getItem('minPrice') ?
                 localStorage.getItem('minPrice') : 1,
             maxPrice: localStorage.getItem('maxPrice') ?
@@ -467,6 +404,13 @@ const vueApp = new Vue({
                 }
             ]
             return temp
+        },
+        voiceVolumeArray() {
+            temp = []
+            for (i = 0; i < 11; i ++) {
+                temp.push(i/10)
+            }
+            return temp
         }
     },
     /***********************
@@ -474,7 +418,23 @@ const vueApp = new Vue({
      * CREATED
      *
      ***********************/
-    created() {},
+    created() {
+        for (i = 1; i <= 50;) {
+            var temp = {}
+            if (i < 5) {
+                temp.value = i
+                temp.label = i + "$"
+                this.priceArray.push(temp)
+                i += 1
+            } else {
+                temp.value = i
+                temp.label = i + "$"
+                this.priceArray.push(temp)
+                i += 5
+            }
+            //console.log("priceArray "+JSON.stringify(this.priceArray))
+        }
+    },
 
     /***********************
      *
@@ -654,6 +614,13 @@ const vueApp = new Vue({
             this.loggedInn = true
             location.reload();
         },
+        
+        setVoiceVolume(param){
+            console.log("voice "+param)
+            this.voiceVolume = param
+            localStorage.setItem('voiceVolume',param)
+        },
+
         clearLocalStorage() {
             localStorage.clear()
             location.reload();
@@ -975,6 +942,51 @@ const vueApp = new Vue({
             clearTimeout(this.newSecInterval)
         },
 
+        createChart(param1, param2) {
+            var chartData = []
+            var chartId = "chart" + param2
+            console.log("chart id " + chartId)
+
+            param1.forEach(element => {
+                //console.log("date " + new Date(dayjs(element.date)))
+                tempData = {}
+                tempY = []
+                tempY.push(element.open)
+                tempY.push(element.high)
+                tempY.push(element.low)
+                tempY.push(element.close)
+                    //console.log("tempY "+JSON.stringify(tempY))
+                tempData.x = new Date(dayjs(element.date))
+                tempData.y = tempY
+                chartData.push(tempData)
+                    //console.log("tempData "+JSON.stringify(tempData))
+            });
+            var options = {
+                series: [{
+                    data: chartData
+                }],
+                chart: {
+                    type: 'candlestick',
+                    height: 100
+                },
+                title: {
+                    text: 'CandleStick Chart',
+                    align: 'left'
+                },
+                xaxis: {
+                    type: 'datetime'
+                },
+                yaxis: {
+                    tooltip: {
+                        enabled: true
+                    }
+                }
+            };
+
+            //var chart = new ApexCharts(document.querySelector(chartId), options);
+            //chart.render();
+        },
+
         //GET SNAPSHOTS (1 MINUTE AND SECONDS)
         getSnapshot(param) {
             var error = []
@@ -1003,7 +1015,9 @@ const vueApp = new Vue({
             var tempSecArray = []
             var useComURL = true
             var urlPrep
-                //console.log("Ticker array lenght " + this.tickerArray.length)
+
+
+            //console.log("Ticker array lenght " + this.tickerArray.length)
             for (i = 0; i < maxNumber; i += maxBatch) {
                 let nextBatch
                 let url
@@ -1017,11 +1031,11 @@ const vueApp = new Vue({
                 //FMP has a limit of 10 API calls/min. To avoid collision between minute and sec updates, we use different urls
                 if (param == "fiveMin" || param == "oneMin") {
                     if (useComURL == true) {
-                        console.log(" -> MinUpdate with .com url")
+                        //console.log(" -> MinUpdate with .com url")
                         urlPrep = "https://financialmodelingprep.com/api/v3/quote/"
                         useComURL = false
                     } else {
-                        console.log(" -> MinUpdate with .io url")
+                        //console.log(" -> MinUpdate with .io url")
                         urlPrep = "https://fmpcloud.io/api/v3/quote/"
                         useComURL = true
                     }
@@ -1183,6 +1197,7 @@ const vueApp = new Vue({
                                         /* If requirements are met and symbol/ticker is not marked as excluded, include in MOMO table */
                                         if (priceDiff >= this.minPriceDiff && pricePc >= this.minPricePc && volumePc >= this.minVolPc && tickerUnfollow == false) {
                                             console.log(" -> MOMO data")
+
                                             var tempSec = {}
                                                 //console.log("-> priceDiff "+priceDiff+", volume pc "+volumePc+ "and min vol pc "+this.minVolPc)
 
@@ -1230,8 +1245,44 @@ const vueApp = new Vue({
                                             tempSec.dayHigh = parseFloat(updateItem.dayHigh).toFixed(2)
                                             tempSec.dayHighRatio = parseFloat(dayHighRatio).toFixed(2)
                                             tempSec.priceAvg50 = parseFloat(updateItem.priceAvg50).toFixed(2)
+
+                                            /*get histo 1mn data
+                                            if (useComURL == true) {
+                                                console.log(" -> Histo data with .com url")
+                                                urlPrep = "https://financialmodelingprep.com/api/v3/"
+                                                useComURL = false
+                                            } else {
+                                                console.log(" -> Histo data with .io url")
+                                                urlPrep = "https://fmpcloud.io/api/v3/"
+                                                useComURL = true
+                                            }
+
+                                            url = urlPrep + "historical-chart/1min/" + updateItem.symbol
+
+                                            axios
+                                                .get(url, {
+                                                    params: {
+                                                        from: dayjs().format("YYYY-MM-DD"),
+                                                        to: dayjs().format("YYYY-MM-DD"),
+                                                        limit: 10,
+                                                        apikey: this.fmp_api
+                                                    }
+                                                })
+                                                .then(response => {
+                                                    console.log(" -> Getting historic 1mn data")
+                                                        //console.log("history time " + JSON.stringify(response))
+                                                    tempSec.chartData = response.data
+                                                    
+                                                    //console.log("tempSec array : " + JSON.stringify(tempSecArray))
+                                                    //this.createChart(response.data)
+
+                                                }).catch(e => {
+                                                    console.log(" -> History 1mn error " + e)
+                                                })*/
                                             tempSecArray.push(tempSec)
-                                                /**/
+
+                                            /**/
+
 
 
                                         }
