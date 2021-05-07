@@ -50,8 +50,7 @@
                         <button type="button" class="btn-close float-end" v-on:click="showInfo = false"></button>
                         <span style="display: block" v-for="message in infoMessage">{{message}}</span></span>
                 </div>
-            </div> -->
-            <!-- ALERT -->
+            </div> -    <!-- ALERT -->
             <div v-show="showAlert" class="alertBox" role="alert">
                 <div class="container-fluid">
                     <span>
@@ -83,9 +82,9 @@
                         </a>
                     </div>
 
-                    <div v-show="showSettings">
+                    <div v-show="showSettings" class="me-1 align-items-center mb-3">
                         <!-- setting 1: sound, time... -->
-                        <div class="me-1 row align-items-center mb-3">
+                        <div class="row">
                             <div class="col-auto">
                                 <button class="btn btn-info audioButton" v-on:click="sound = !sound">
                                     <span v-if="sound == true">
@@ -93,6 +92,11 @@
                                     </span>
                                     <span v-else>
                                         <i class="fa fa-volume-off"></i></span></button>
+                            </div>
+                            <div class="col-auto">
+                                <select v-on:input="setVoiceVolume($event.target.value)" class="form-select">
+                                    <option v-for="item in voiceVolumeArray" v-bind:value="item" v-bind:selected="item == voiceVolume">{{item}}</option>
+                                </select>
                             </div>
 
                             <div class="col-auto">
@@ -117,152 +121,10 @@
                             </div>
                         </div>
 
-                        <!-- setting 2: colors 
-                            <form @submit.prevent="addColors" class="row g-3 align-items-center">
-                                <h6>Colors</h6>
-                                <!-- IF 
-                                <div class="row mb-1">
-                                    <div class="col-3">
-                                        <select v-model="colorsType" class="form-select" aria-label="Default select example">
-                                            <option value=null selected>IF</option>
-                                            <option value="price">Price</option>
-                                            <option value="volume">Volume</option>
-                                            <option value="float">Float</option>
-                                            <option value="priceChge">Price Chge</option>
-                                            <option value="priceChgePc">Price Chge (%)</option>
-                                            <option value="volChgePc">Volume Chge (%)</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-2">
-                                        <select v-model="colorsHighLow1" class="form-select">
-                                            <option v-for="hl in highLowArray" v-bind:value="hl.value">{{hl.text}}</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-2">
-                                        <input v-model="colorsValue1" type="number" step="0.01" class="form-control">
-                                    </div>
-                                    <div class="col-1">
-                                        <i @click="showAndOr1 = true" class="fa fa-plus-circle"></i>
-                                    </div>
-
-                                    <!-- THEN
-
-                                    <div class="col-3">
-                                        <select v-model="colorsColor" class="form-select">
-                                            <option value=null selected>THEN</option>
-                                            <option v-for="col in colorArray" v-bind:value="col.value">{{col.text}}</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="col-1">
-                                        <button type="submit" class="btn btn-outline-success">ADD</button>
-                                    </div>
-                                </div>
-                                <!-- AND/OR 1
-                                <div v-show="showAndOr1" class="row mb-1">
-                                    <div class="col-2 offset-1">
-                                        <select v-model="andOr1" class="form-select">
-                                            <option v-for="oa in orAnd" v-bind:value="oa.value">{{oa.text}}</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-2">
-                                        <select v-model="colorsHighLow2" class="form-select">
-                                            <option v-for="hl in highLowArray" v-bind:value="hl.value">{{hl.text}}</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-2">
-                                        <input v-model="colorsValue2" type="number" class="form-control">
-                                    </div>
-                                    <div class="col-1">
-                                        <i @click="showAndOr2 = true" class="fa fa-plus-circle"></i>
-                                        <i @click="showAndOr1 = false; andOr1=null; colorsHighLow2=null; colorsValue2=null" class="fa fa-minus-circle"></i>
-                                    </div>
-                                </div>
-
-                                <!-- AND/OR 2 
-                                <div v-show="showAndOr2" class="row mb-1">
-                                    <div class="col-2 offset-1">
-                                        <select v-model="andOr2" class="form-select">
-                                            <option v-for="oa in orAnd" v-bind:value="oa.value">{{oa.text}}</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-2">
-                                        <select v-model="colorsHighLow3" class="form-select">
-                                            <option v-for="hl in highLowArray" v-bind:value="hl.value">{{hl.text}}</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-2">
-                                        <input v-model="colorsValue3" type="number" class="form-control">
-                                    </div>
-                                    <div class="col-1">
-                                        <i @click="showAndOr3 = true" class="fa fa-plus-circle"></i>
-                                        <i @click="showAndOr2 = false; andOr2=null; colorsHighLow3=null; colorsValue3=null" class="fa fa-minus-circle"></i>
-                                    </div>
-                                </div>
-
-                                <!-- AND/OR 3
-                                <div v-show="showAndOr3" class="row mb-1">
-                                    <div class="col-2 offset-1">
-                                        <select v-model="andOr3" class="form-select">
-                                            <option v-for="oa in orAnd" v-bind:value="oa.value">{{oa.text}}</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-2">
-                                        <select v-model="colorsHighLow4" class="form-select">
-                                            <option v-for="hl in highLowArray" v-bind:value="hl.value">{{hl.text}}</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-2">
-                                        <input v-model="colorsValue4" type="number" class="form-control">
-                                    </div>
-                                    <div class="col-1">
-                                        <i @click="showAndOr3 = false; andOr3=null; colorsHighLow4=null; colorsValue4=null" class="fa fa-minus-circle"></i>
-                                    </div>
-                                </div>
-                            </form>
-
-                            <!-- color list
-                            <div class="col-6">
-                                <table class="table text-center">
-                                    <thead class="thead-dark">
-                                        <tr>
-                                            <th scope="col">Element</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                            <td v-bind:class="colors['price'].map( (obj, index) => { if(index == 0){return '{' + obj.css} else if(colors['price'].length-1 == index){return obj.css + '}'} else{return obj.css} } ).join(', ')">{{colors['price'].map( (obj, index) => { if(index == 0){return '{' + obj.css} else if(colors['price'].length-1 == index){return obj.css + '}'} else{return obj.css} } ).join(', ')}}</td>
-                                    </tbody>
-                                </table>
-                            </div>-->
-                        <!-- end colors settings -->
-                        <!-- Existing colors 
-                        <div class="row">
-                            <div v-for="(color, index) in colors" class="col-auto">
-                                <span>{{index}}</span>
-                                <i class="fa fa-info-circle" @click="colorModal = index" data-bs-toggle="modal" data-bs-target="#colorModal"></i>
-                            </div>
-                        </div>-->
-                        <!-- Color modal -->
-                        <div class="modal fade" id="colorModal" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div v-for="item in colors[colorModal]" class="modal-body row">
-                                        <div class="col-1">
-                                            <i class="fa fa-square" v-bind:class="item.color"></i>
-                                        </div>
-                                        <div class="col-11">
-                                            {{item.desc}}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- end show/hide setting -->
                     </div>
-                    <!-- end show/hide setting -->
                 </div>
+
                 <!-- end settings -->
                 <hr>
 

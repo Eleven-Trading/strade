@@ -227,7 +227,7 @@ const vueApp = new Vue({
             items: null,
             sound: true,
             voice: 49,
-            voiceVolume: 0.9,
+            voiceVolume: localStorage.getItem('voiceVolume') ? localStorage.getItem('voiceVolume') : 0.9,
             unfollowArray: localStorage.getItem('unfollowArray') ?
                 localStorage
                 .getItem('unfollowArray')
@@ -295,70 +295,6 @@ const vueApp = new Vue({
             }],
             maxVolume: 500000000,
             priceArray: [],
-            /*priceArray: [{
-                value: 0,
-                label: "0$"
-            }, {
-                value: 1,
-                label: "1$"
-            }, {
-                value: 2,
-                label: "2$"
-            }, {
-                value: 3,
-                label: "3$"
-            }, {
-                value: 4,
-                label: "4$"
-            }, {
-                value: 5,
-                label: "5$"
-            }, {
-                value: 6,
-                label: "6$"
-            }, {
-                value: 7,
-                label: "7$"
-            }, {
-                value: 8,
-                label: "8$"
-            }, {
-                value: 9,
-                label: "9$"
-            }, {
-                value: 10,
-                label: "10$"
-            }, {
-                value: 11,
-                label: "11$"
-            }, {
-                value: 12,
-                label: "12$"
-            }, {
-                value: 13,
-                label: "13$"
-            }, {
-                value: 14,
-                label: "14$"
-            }, {
-                value: 15,
-                label: "15$"
-            }, {
-                value: 16,
-                label: "16$"
-            }, {
-                value: 17,
-                label: "17$"
-            }, {
-                value: 18,
-                label: "18$"
-            }, {
-                value: 19,
-                label: "19$"
-            }, {
-                value: 20,
-                label: "20$"
-            }],*/
             minPrice: localStorage.getItem('minPrice') ?
                 localStorage.getItem('minPrice') : 1,
             maxPrice: localStorage.getItem('maxPrice') ?
@@ -468,6 +404,13 @@ const vueApp = new Vue({
                 }
             ]
             return temp
+        },
+        voiceVolumeArray() {
+            temp = []
+            for (i = 0; i < 11; i ++) {
+                temp.push(i/10)
+            }
+            return temp
         }
     },
     /***********************
@@ -480,12 +423,12 @@ const vueApp = new Vue({
             var temp = {}
             if (i < 5) {
                 temp.value = i
-                temp.label = i+"$"
+                temp.label = i + "$"
                 this.priceArray.push(temp)
                 i += 1
             } else {
                 temp.value = i
-                temp.label = i+"$"
+                temp.label = i + "$"
                 this.priceArray.push(temp)
                 i += 5
             }
@@ -499,7 +442,6 @@ const vueApp = new Vue({
      *
      ***********************/
     mounted: async function() {
-
         mountedFunction = async() => {
             /*
              *1. Avoid annoying speechsynthesis error and alert that speech is activated. Remember that user needs to interact with the screen. A better option is to make an alert to make sure user interacts with page on load.
@@ -672,6 +614,13 @@ const vueApp = new Vue({
             this.loggedInn = true
             location.reload();
         },
+        
+        setVoiceVolume(param){
+            console.log("voice "+param)
+            this.voiceVolume = param
+            localStorage.setItem('voiceVolume',param)
+        },
+
         clearLocalStorage() {
             localStorage.clear()
             location.reload();
