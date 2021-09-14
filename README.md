@@ -1,5 +1,5 @@
 # strade
-strade is an open source stock scanner and screener
+strade is a simple and open source momentum stock scanner and screener, giving you alerts when the price or volume of a stock increases.
 
 # The project
 ## Motivation
@@ -7,7 +7,9 @@ Trade Ideas is a great and very powerful stock scanner. However, I thought it wa
 
 ## Features
 - Voice assistant for announcing stocks
-- Customize the scan to your preferences
+- Customize the scan to your preferences (price range, volume range, etc.)
+- Color code for filtering out the best stocks
+- Stocks are listed in a table where you can quickly see price, volume, float, etc.
 
 ## Screenshots
 <img src="https://7ak-public.s3.amazonaws.com/strade_scanner_sreenshot.png" height="300">
