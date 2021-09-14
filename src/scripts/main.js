@@ -12,8 +12,8 @@ const vueApp = new Vue({
             profileUrl: "medias/astronaut.png",
             fmp_api: "FMP_API",
             tickerListSettings: {
-                marketCapLowerThan: 2000000000,
-                volumeLessThan: 500000000,
+                marketCapLowerThan: 20 * 1000000000, //20 B
+                //volumeLessThan: 500000000,
                 exchange: "NYSE,NASDAQ,amex"
             },
             showAlert: false,
@@ -853,7 +853,7 @@ const vueApp = new Vue({
                             error.push(response.data["Error Message"])
                         }
                         var tickerArray = []
-                            //console.log(" -> full ticker list " + JSON.stringify(response.data))
+                        //console.log(" -> full ticker list " + JSON.stringify(response.data))
                         for (key in response.data) {
 
                             tickerArray.push(response.data[key].symbol)
@@ -1075,12 +1075,13 @@ const vueApp = new Vue({
                             var maxVol = this.maxVolume
                             var minPx = this.minPrice
                             var maxPx = this.maxPrice
-
+                            console.log("minVol "+minVol+" maxVol "+maxVol+" minPx "+minPx+" maxPx "+maxPx)
                             var filterData = response
                                 .data
                                 .filter((fil) => {
-                                    return fil.price >= minPx && fil.price <= maxPx && fil.volume >= minVol && fil.volume < maxVol && fil.marketCap < 2000000000
+                                    return fil.price >= minPx && fil.price <= maxPx && fil.volume >= minVol /*&& fil.volume < maxVol && fil.marketCap < 2000000000*/
                                 });
+                            //console.log("filtered data "+JSON.stringify(filterData))
 
                             if (param == "fiveMin") {
                                 this.fiveMinSnapshot = [
@@ -1175,19 +1176,19 @@ const vueApp = new Vue({
                                     /*
                                     /*
                                     */
-
+                                    //console.log("onemin snap "+JSON.stringify(this.oneMinSnapshot))
                                     if (!!this.oneMinSnapshot && this.oneMinSnapshot.find(oneMinItem => oneMinItem.symbol === updateItem.symbol) != undefined) {
 
                                         /* Find the whole object of the symbol that matches */
                                         var oneMinObject = this
                                             .oneMinSnapshot
                                             .find(oneMinItem => oneMinItem.symbol === updateItem.symbol)
-                                            //console.log("There is a match. one min object is " + JSON.stringify(oneMinObject) + " and updateItem object is " + JSON.stringify(updateItem))
+                                        console.log("There is a match. one min object is " + JSON.stringify(oneMinObject) + " and updateItem object is " + JSON.stringify(updateItem))
                                         var priceDiff = updateItem.price - oneMinObject.price
                                         var pricePc = ((updateItem.price - oneMinObject.price) / oneMinObject.price) * 100
                                         var volumePc = ((updateItem.volume - oneMinObject.volume) / oneMinObject.volume) * 100
                                         var dayHighRatio = updateItem.price / updateItem.dayHigh
-                                            //console.log("-> priceDiff "+priceDiff+", volume pc "+volumePc+ "and min vol pc "+this.minVolPc)
+                                        //console.log("-> priceDiff "+priceDiff+", volume pc "+volumePc+ "and min vol pc "+this.minVolPc)
 
                                         /* Check if symobol is in unfollow array */
                                         var tickerUnfollow = this
