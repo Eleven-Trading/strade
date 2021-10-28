@@ -30,8 +30,11 @@ Trade Ideas is a great and very powerful stock scanner. However, I thought it wa
 
 ### Installation
 
-- Install dependencies (npm and composer)
-- Run "gulp" in terminal and launch localhost:3000 in your browser
+- Install dependencies (npm)
+- Run "gulp" in terminal with the following arguments
+	- FMP_API : your Fincancial Modeling Pre API credentials
+	- OKTA_BASE_URL : base url to your Okta server
+	- OKTA_CLIENT_ID : your Okta client ID
 
 ### Deployment
 - Deploy on your localhost or server as a static website (using Nginx for example)
